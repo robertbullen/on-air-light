@@ -1,0 +1,35 @@
+{
+	"name": "on-air-light",
+	"version": "1.0.0",
+	"description": "Implements an \"On Air\" light that indicates when a Zoom user is in a \"do not disturb\" status. Zoom invokes a webhook implemented on AWS using API Gateway and Lambda, which in turn invoke a Particle Photon Internet Button function.",
+	"main": "index.js",
+	"scripts": {
+		"start": "npx ts-node server/index.ts",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/robertbullen/on-air-light.git"
+	},
+	"author": "",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/robertbullen/on-air-light/issues"
+	},
+	"homepage": "https://github.com/robertbullen/on-air-light#readme",
+	"dependencies": {
+		"cors": "^2.8.5",
+		"express": "^4.17.1",
+		"express-async-handler": "^1.1.4",
+		"express-yup": "^1.0.0",
+		"localtunnel": "^2.0.1",
+		"particle-api-js": "^9.1.0",
+		"yup": "^0.32.9"
+	},
+	"devDependencies": {
+		"@types/cors": "^2.8.12",
+		"@types/express": "^4.17.13",
+		"@types/localtunnel": "^2.0.1",
+		"typescript": "^4.4.2"
+	}
+}
