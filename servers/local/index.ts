@@ -1,7 +1,9 @@
+#!/usr/bin/env npx ts-node-script
+
 import localtunnel from 'localtunnel';
 import type { AddressInfo } from 'net';
 import * as util from 'util';
-import { createApp } from '../lib/express/app';
+import { createApp } from '../lib/app';
 
 util.inspect.defaultOptions.depth = Infinity;
 

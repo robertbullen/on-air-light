@@ -1,6 +1,0 @@
-{
-	"compilerOptions": {
-		"esModuleInterop": true
-	},
-	"include": ["lib/**/*.d.ts", "server/index.ts"]
-}

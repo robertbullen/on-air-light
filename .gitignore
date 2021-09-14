@@ -1,3 +1,5 @@
 node_modules/
-yarn-error.log
 photon/photon_firmware_*.bin
+servers/lambda/dist/
+yarn-error.log
+
