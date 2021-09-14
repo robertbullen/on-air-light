@@ -82,7 +82,7 @@ public:
     void update() override
     {
         Period period(this->periodMillis);
-        uint8_t brightness = round(255 * easeQuint(period.progressPercent));
+        uint8_t brightness = round(255 * easeQuad(period.progressPercent));
         this->device.setBrightness(brightness);
         this->device.allLedsOn(this->color.red, this->color.green, this->color.blue);
     }
