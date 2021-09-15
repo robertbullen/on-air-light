@@ -3,58 +3,108 @@
 #include <InternetButton.h>
 
 #include "Color.h"
-#include "DisplayMode.h"
+#include "Patterns.h"
+#include "Timeline.h"
 
 InternetButton device;
-Color color(0, 0, 0);
+Color color;
+Timeline timeline;
 
-SolidDisplayMode solid(device, color);
-BlinkDisplayMode blink(device, color);
-FlashDisplayMode flash(device, color);
-PulseDisplayMode pulse(device, color);
-SpinDisplayMode spin(device, color);
-AlternateDisplayMode alternate(device, color);
+SolidPattern solid(device, color, timeline);
+BlinkPattern blink(device, color, timeline);
+FlashPattern flash(device, color, timeline);
+PulsePattern pulse(device, color, timeline);
+SpinPattern spin(device, color, timeline);
+AlternatePattern alternate(device, color, timeline);
 
-std::vector<DisplayMode *> displayModes{&solid, &blink, &flash, &pulse, &spin, &alternate};
-auto displayMode = begin(displayModes);
+std::vector<Pattern *> patterns{&solid, &blink, &flash, &pulse, &spin, &alternate};
+auto pattern = begin(patterns);
 
-int setColorHex(String hex)
+String getColor()
 {
-	boolean success = color.fromHex(hex);
-
-	return success ? 1 : -1;
+	return color.getHex();
 }
 
-int setDisplayMode(String name)
+int setColor(String newHex)
 {
-	auto foundDisplayMode = std::find_if(begin(displayModes), end(displayModes),
-										 [name](DisplayMode *item)
-										 { return item->name.equals(name); });
-	if (foundDisplayMode == end(displayModes))
-	{
-		return -1;
-	}
-	if (foundDisplayMode == displayMode)
+	String oldHex = color.getHex();
+	if (newHex.equals(oldHex))
 	{
 		return 0;
 	}
 
-	displayMode = foundDisplayMode;
-	(*displayMode)->start();
+	boolean success = color.setHex(newHex);
+
+	return success ? 1 : -1;
+}
+
+int getDuration()
+{
+	return timeline.getDuration();
+}
+
+int setDuration(String duration)
+{
+	uint64_t oldDuration = timeline.getDuration();
+	uint64_t newDuration = duration.toInt();
+
+	if (newDuration == oldDuration)
+	{
+		return 0;
+	}
+
+	boolean success = timeline.setDuration(newDuration);
+
+	return success ? 1 : -1;
+}
+
+String getPattern()
+{
+	return (*pattern)->name();
+}
+
+int setPattern(String newName)
+{
+	String oldName = (*pattern)->name();
+
+	if (newName.equals(oldName))
+	{
+		return 0;
+	}
+
+	auto foundPattern = std::find_if(begin(patterns), end(patterns),
+									 [newName](Pattern *item)
+									 { return item->name().equals(newName); });
+	if (foundPattern == end(patterns))
+	{
+		return -1;
+	}
+
+	pattern = foundPattern;
+	(*pattern)->start();
 
 	return 1;
 }
 
 void setup()
 {
-	Particle.function("setColorHex", setColorHex);
-	Particle.function("setDisplayMode", setDisplayMode);
+	Particle.variable("color", getColor);
+	Particle.function("setColor", setColor);
+
+	Particle.variable("duration", getDuration);
+	Particle.function("setDuration", setDuration);
+
+	Particle.variable("pattern", getPattern);
+	Particle.function("setPattern", setPattern);
 
 	device.begin();
-	(*displayMode)->start();
+
+	timeline.update();
+	(*pattern)->start();
 }
 
 void loop()
 {
-	(*displayMode)->update();
+	timeline.update();
+	(*pattern)->update();
 }
