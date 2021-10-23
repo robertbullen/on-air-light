@@ -23,6 +23,9 @@ module.exports = {
 	output: {
 		clean: true,
 		filename: 'index.js',
+		library: {
+			type: 'commonjs2',
+		},
 		path: path.resolve(__dirname, 'dist'),
 	},
 	resolve: {

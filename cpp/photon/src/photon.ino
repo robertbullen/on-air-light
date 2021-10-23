@@ -69,7 +69,7 @@ void nextColor()
 
 // Timeline
 
-std::vector<uint64_t> durations{1000, 2000, 3000, 4000, 5000};
+std::vector<uint64_t> durations{500, 1000, 2000, 4000, 8000};
 
 Timeline timeline;
 
@@ -115,6 +115,7 @@ std::vector<Pattern *> patterns{
 	new PulsePattern(device, color, timeline),
 	new FlashPattern(device, color, timeline),
 	new SpinPattern(device, color, timeline),
+	new ProgressPattern(device, color, timeline),
 	new AlternatePattern(device, color, timeline),
 };
 std::vector<Pattern *>::const_iterator pattern = std::begin(patterns);

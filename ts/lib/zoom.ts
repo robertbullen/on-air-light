@@ -31,27 +31,25 @@ export interface UserPresenceStatusUpdated {
 
 export const UserPresenceStatusUpdated = {
 	schema(): yup.SchemaOf<UserPresenceStatusUpdated> {
-		return yup
-			.object({
-				event: yup
-					.mixed<UserPresenceStatusUpdated['event']>()
-					.oneOf(['user.presence_status_updated'])
-					.required(),
-				event_ts: yup.number().required(),
-				payload: yup
-					.object({
-						account_id: yup.string().required(),
-						object: yup
-							.object({
-								date_time: yup.string().required(),
-								email: yup.string().email().required(),
-								id: yup.string().required(),
-								presence_status: yup.mixed<UserPresenceStatus>().required(),
-							})
-							.required(),
-					})
-					.required(),
-			})
-			.required();
+		return yup.object({
+			event: yup
+				.mixed<UserPresenceStatusUpdated['event']>()
+				.oneOf(['user.presence_status_updated'])
+				.required(),
+			event_ts: yup.number().required(),
+			payload: yup
+				.object({
+					account_id: yup.string().required(),
+					object: yup
+						.object({
+							date_time: yup.string().required(),
+							email: yup.string().email().required(),
+							id: yup.string().required(),
+							presence_status: yup.mixed<UserPresenceStatus>().required(),
+						})
+						.required(),
+				})
+				.required(),
+		});
 	},
 };

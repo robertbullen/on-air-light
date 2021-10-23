@@ -115,7 +115,7 @@ public:
     void update() override
     {
         uint8_t tailLedIndex = round(RING_LED_COUNT * this->_timeline.progress());
-        uint8_t arcLedCount = round(RING_LED_COUNT * 2 / 3.0);
+        uint8_t arcLedCount = round(RING_LED_COUNT * 0.667);
         uint8_t headLedIndex = tailLedIndex + arcLedCount;
 
         // A shorter algorithm would be to turn all LEDs off first and then only turn on those that
@@ -123,9 +123,50 @@ public:
         for (uint8_t ledIndex = tailLedIndex; ledIndex < tailLedIndex + RING_LED_COUNT; ledIndex++)
         {
             uint8_t ledNumber = ledIndex % RING_LED_COUNT + 1;
-            if (ledIndex >= tailLedIndex && ledIndex < headLedIndex)
+            if (ledIndex >= tailLedIndex && ledIndex <= headLedIndex)
             {
-                this->_device.ledOn(ledNumber, this->_color.red(), this->_color.green(), this->_color.blue());
+                float brightness = 1 - (headLedIndex - ledIndex) / (float)arcLedCount;
+                this->_device.ledOn(ledNumber, brightness * this->_color.red(), brightness * this->_color.green(), brightness * this->_color.blue());
+            }
+            else
+            {
+                this->_device.ledOff(ledNumber);
+            }
+        }
+    }
+};
+
+class ProgressPattern : public Pattern
+{
+public:
+    ProgressPattern(InternetButton &device, Color &color, Timeline &timeline)
+        : Pattern("progress", device, color, timeline)
+    {
+    }
+
+    void update() override
+    {
+        float fuzzyHeadLedIndex = RING_LED_COUNT * this->_timeline.progress();
+        uint8_t headLedIndex = round(fuzzyHeadLedIndex);
+
+        for (uint8_t ledIndex = 0; ledIndex < RING_LED_COUNT; ledIndex++)
+        {
+            uint8_t ledNumber = ledIndex + 1;
+            if (ledIndex <= headLedIndex)
+            {
+                uint8_t red = this->_color.red();
+                uint8_t green = this->_color.green();
+                uint8_t blue = this->_color.blue();
+
+                if (ledIndex == headLedIndex)
+                {
+                    float brightness = fuzzyHeadLedIndex - headLedIndex;
+                    red *= brightness;
+                    green *= brightness;
+                    blue *= brightness;
+                }
+
+                this->_device.ledOn(ledNumber, red, green, blue);
             }
             else
             {

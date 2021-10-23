@@ -1,5 +1,5 @@
 node_modules/
-photon/photon_firmware_*.bin
-servers/lambda/dist/
+/cpp/photon/photon_firmware_*.bin
+/local/
+/ts/lambda/dist/
 yarn-error.log
-
