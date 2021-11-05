@@ -23,7 +23,6 @@ export class EnvSecretsService extends SecretsService<object, object> {
 		}
 
 		const result: Secrets = {
-			iftttClientId: getEnvVariableOrThrow('IFTTT_CLIENT_ID'),
 			particleDeviceId: getEnvVariableOrThrow('PARTICLE_DEVICE_ID'),
 			particlePassword: getEnvVariableOrThrow('PARTICLE_PASSWORD'),
 			particleUsername: getEnvVariableOrThrow('PARTICLE_USERNAME'),

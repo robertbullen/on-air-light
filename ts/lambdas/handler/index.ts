@@ -1,27 +1,45 @@
+import {
+	APIGatewayProxyCallback,
+	APIGatewayProxyEvent,
+	APIGatewayProxyResult,
+	Context,
+} from 'aws-lambda';
 import awsSdk from 'aws-sdk';
 import { captureAWS } from 'aws-xray-sdk-core';
 import * as express from 'express';
 import Particle from 'particle-api-js';
 import serverless from 'serverless-http';
 import * as util from 'util';
-import { createApp } from '../lib/app';
-import { functionName } from '../lib/logging';
-import { ParticleAuthenticatorService } from '../lib/services/on-air-light/particle-authenticator-service';
-import { ParticleOnAirLightService } from '../lib/services/on-air-light/particle-on-air-light-service';
-import { SsmSecretsService } from '../lib/services/secrets/ssm-secrets-service';
+import { createApp } from '../../lib/app';
+import { functionName } from '../../lib/logging';
+import { DynamoDbEventsService } from '../../lib/services/events/dynamodb-events-service';
+import { ParticleAuthenticatorService } from '../../lib/services/on-air-lights/particle-authenticator-service';
+import { ParticleOnAirLightService } from '../../lib/services/on-air-lights/particle-on-air-light-service';
+import { SsmSecretsService } from '../../lib/services/secrets/ssm-secrets-service';
+import { env } from './environment-variables';
 
 const AWS = captureAWS(awsSdk);
 AWS.config.logger = console;
 
 util.inspect.defaultOptions.depth = Infinity;
 
-async function createServerlessHandler(): Promise<AWSLambda.APIGatewayProxyHandler> {
+async function createServerlessHandler(): Promise<serverless.Handler> {
 	const prefix: string = functionName(createServerlessHandler);
 	console.info(prefix);
 
 	// Create services.
+	const eventsService = new DynamoDbEventsService(
+		{
+			tableName: env().TABLE_NAME,
+		},
+		{
+			documentClient: new AWS.DynamoDB.DocumentClient(),
+		},
+	);
 	const particle = new Particle();
-	const secretsService = new SsmSecretsService({ ssm: new AWS.SSM() });
+	const secretsService = new SsmSecretsService({
+		ssm: new AWS.SSM(),
+	});
 	const particleAuthenticatorService = new ParticleAuthenticatorService({
 		particle,
 		secretsService,
@@ -39,22 +57,23 @@ async function createServerlessHandler(): Promise<AWSLambda.APIGatewayProxyHandl
 
 	// Create the Express application.
 	const app: express.Application = await createApp({
-		healthCheckServices: [particleAuthenticatorService, secretsService],
+		eventsService,
+		healthCheckServices: [eventsService, particleAuthenticatorService, secretsService],
 		onAirLightService,
 		secretsService,
 	});
 
 	// Wrap the Express application with serverless-http.
-	const result = serverless(app) as AWSLambda.APIGatewayProxyHandler;
+	const result: serverless.Handler = serverless(app);
 	console.info(prefix, { result });
 	return result;
 }
 
 export async function handler(
-	event: AWSLambda.APIGatewayProxyEvent,
-	context: AWSLambda.Context,
-	callback: AWSLambda.APIGatewayProxyCallback,
-): Promise<void | AWSLambda.APIGatewayProxyResult> {
+	event: APIGatewayProxyEvent,
+	context: Context,
+	_callback: APIGatewayProxyCallback,
+): Promise<APIGatewayProxyResult> {
 	const prefix: string = functionName(handler);
 	console.info(prefix, { event });
 
@@ -63,7 +82,7 @@ export async function handler(
 		handler._serverlessHandler ??= await createServerlessHandler();
 
 		// Process the event.
-		const result = await handler._serverlessHandler(event, context, callback);
+		const result = (await handler._serverlessHandler(event, context)) as APIGatewayProxyResult;
 
 		console.info(prefix, { result });
 		return result;
@@ -72,4 +91,4 @@ export async function handler(
 		throw error;
 	}
 }
-handler._serverlessHandler = undefined as AWSLambda.APIGatewayProxyHandler | undefined;
+handler._serverlessHandler = undefined as serverless.Handler | undefined;

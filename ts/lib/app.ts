@@ -2,22 +2,26 @@ import cors from 'cors';
 import express from 'express';
 import asyncHandler from 'express-async-handler';
 import { validate } from 'express-yup';
+import { v4 as uuid } from 'uuid';
 import * as yup from 'yup';
+import { Event, EventKey, EventsService } from './services/events/events-service';
 import {
 	Color,
 	OnAirLightService,
 	OnAirLightState,
 	Pattern,
-} from './services/on-air-light/on-air-light-service';
+} from './services/on-air-lights/on-air-light-service';
 import { SecretsService } from './services/secrets/secrets-service';
 import { Service } from './services/service';
 import * as zoom from './zoom';
 
 export async function createApp({
+	eventsService,
 	healthCheckServices,
 	onAirLightService,
 	secretsService,
 }: {
+	eventsService: EventsService;
 	healthCheckServices: readonly Service[];
 	onAirLightService: OnAirLightService;
 	secretsService: SecretsService;
@@ -68,29 +72,25 @@ export async function createApp({
 		}),
 	);
 
-	app.post(
-		'/users/:userId/studios/:studioId',
-		validate(
-			yup
-				.object({
-					body: StudioUserPresence.schema().required(),
-					headers: yup
-						.object({
-							'ifttt-client-id': yup
-								.string()
-								.oneOf([(await secretsService.getSecrets()).iftttClientId]),
-						})
-						.required(),
-				})
-				.required(),
-		),
+	app.get(
+		'/events/:eventKey',
 		asyncHandler(async (req, res, _next) => {
-			const userId = req.params.userId as string;
-			const studioId = req.params.studioId as string;
-			const body = req.body as StudioUserPresence;
-			console.info({ studioId, userId, body });
+			const eventKey: EventKey = req.params.eventKey ?? '';
+			const event: Event | undefined = await eventsService.readEvent(eventKey);
+			res.status(event ? 200 : 404).json(event);
+		}),
+	);
 
-			res.status(204).send();
+	app.post(
+		'/events',
+		asyncHandler(async (req, res, _next) => {
+			const event: Event = {
+				data: req.body,
+				eventId: uuid(),
+				timestamp: new Date().toISOString(),
+			};
+			const eventKey: EventKey = await eventsService.createEvent(event);
+			res.status(201).location(`/events/${eventKey}`).json(event);
 		}),
 	);
 
@@ -117,7 +117,9 @@ export async function createApp({
 			const body = req.body as zoom.UserPresenceStatusUpdated;
 			console.info({ userId, body });
 
-			const state: Partial<OnAirLightState> = {};
+			const state: Partial<OnAirLightState> = {
+				duration: 2000,
+			};
 			switch (body.payload.object.presence_status) {
 				case zoom.UserPresenceStatus.available:
 					state.color = Color.lime;
@@ -138,7 +140,7 @@ export async function createApp({
 
 				case zoom.UserPresenceStatus.presenting:
 					state.color = Color.red;
-					state.pattern = Pattern.flash;
+					state.pattern = Pattern.pulse;
 					break;
 
 				default:

@@ -1,5 +1,7 @@
-node_modules/
 /cpp/photon/photon_firmware_*.bin
 /local/
-/ts/lambda/dist/
+/ts/cdk/.cdk.staging
+/ts/cdk/cdk.out
+/ts/lambdas/dist/
+node_modules/
 yarn-error.log

@@ -24,7 +24,10 @@ export abstract class Service<
 	protected constructor(
 		protected readonly config: Readonly<TConfig>,
 		protected readonly dependencies: Readonly<TDependencies>,
-	) {}
+	) {
+		Object.freeze(config);
+		Object.freeze(dependencies);
+	}
 
 	public static async checkHealthOfAll(
 		services: readonly Service[],

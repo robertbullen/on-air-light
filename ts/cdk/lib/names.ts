@@ -15,9 +15,14 @@ class IdAndName {
 export const names = {
 	certificate: new IdAndName('Certificate'),
 	hostedZone: new IdAndName('HostedZone'),
-	restApiARecord: new IdAndName('RestApiARecord'),
-	restApiDomainName: new IdAndName('RestApiDomainName'),
 	restApi: new IdAndName('RestApi'),
-	restApiHandler: new IdAndName('RestApiHandler'),
+	restApiARecord: new IdAndName('RestApiARecord'),
+	restApiAuthorizerFunction: new IdAndName('RestApiAuthorizerFunction'),
+	restApiDomainName: new IdAndName('RestApiDomainName'),
+	restApiHandlerFunction: new IdAndName('RestApiHandlerFunction'),
+	restApiKey: new IdAndName('RestApiKey'),
+	restApiRequestAuthorizer: new IdAndName('RestApiRequestAuthorizer'),
+	restApiUsagePlan: new IdAndName('RestApiUsagePlan'),
 	stack: new IdAndName('Stack'),
+	table: new IdAndName('Table'),
 };

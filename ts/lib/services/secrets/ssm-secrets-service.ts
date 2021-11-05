@@ -38,7 +38,6 @@ export class SsmSecretsService extends SecretsService<object, Dependencies> {
 		}
 
 		const ssmParameters: Record<keyof Secrets, string> = {
-			iftttClientId: generateParameterPath('IFTTT_CLIENT_ID'),
 			particleDeviceId: generateParameterPath('PARTICLE_DEVICE_ID'),
 			particlePassword: generateParameterPath('PARTICLE_PASSWORD'),
 			particleUsername: generateParameterPath('PARTICLE_USERNAME'),
@@ -71,7 +70,6 @@ export class SsmSecretsService extends SecretsService<object, Dependencies> {
 		}
 
 		const result: Secrets = {
-			iftttClientId: findParameterValueOrThrow(ssmParameters.iftttClientId),
 			particleDeviceId: findParameterValueOrThrow(ssmParameters.particleDeviceId),
 			particlePassword: findParameterValueOrThrow(ssmParameters.particlePassword),
 			particleUsername: findParameterValueOrThrow(ssmParameters.particleUsername),

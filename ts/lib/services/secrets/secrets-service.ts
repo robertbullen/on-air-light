@@ -2,7 +2,6 @@ import { mask } from '../../logging';
 import { Service } from '../service';
 
 export interface Secrets {
-	iftttClientId: string;
 	particleDeviceId: string;
 	particlePassword: string;
 	particleUsername: string;

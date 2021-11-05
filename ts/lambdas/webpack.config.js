@@ -6,7 +6,10 @@ const path = require('path');
 module.exports = {
 	context: __dirname,
 	devtool: 'inline-source-map',
-	entry: './index.ts',
+	entry: {
+		'./authorizer/index': './authorizer/index.ts',
+		'./handler/index': './handler/index.ts',
+	},
 	externals: {
 		'aws-sdk': 'commonjs aws-sdk',
 	},
@@ -21,12 +24,10 @@ module.exports = {
 		],
 	},
 	output: {
-		clean: true,
-		filename: 'index.js',
+		// clean: true,
 		library: {
 			type: 'commonjs2',
 		},
-		path: path.resolve(__dirname, 'dist'),
 	},
 	resolve: {
 		extensions: ['.ts', '.js'],

@@ -7,13 +7,15 @@ import { AddressInfo } from 'net';
 import Particle from 'particle-api-js';
 import * as util from 'util';
 import { createApp } from '../lib/app';
-import { ParticleAuthenticatorService } from '../lib/services/on-air-light/particle-authenticator-service';
-import { ParticleOnAirLightService } from '../lib/services/on-air-light/particle-on-air-light-service';
+import { MockEventsService } from '../lib/services/events/mock-events-service';
+import { ParticleAuthenticatorService } from '../lib/services/on-air-lights/particle-authenticator-service';
+import { ParticleOnAirLightService } from '../lib/services/on-air-lights/particle-on-air-light-service';
 import { EnvSecretsService } from '../lib/services/secrets/env-secrets-service';
 
 util.inspect.defaultOptions.depth = Infinity;
 
 async function main(): Promise<void> {
+	const eventsService = new MockEventsService();
 	const particle = new Particle();
 	const secretsService = new EnvSecretsService();
 	const particleAuthenticatorService = new ParticleAuthenticatorService({
@@ -32,7 +34,8 @@ async function main(): Promise<void> {
 	);
 
 	const app: express.Application = await createApp({
-		healthCheckServices: [particleAuthenticatorService, secretsService],
+		eventsService,
+		healthCheckServices: [eventsService, particleAuthenticatorService, secretsService],
 		onAirLightService,
 		secretsService,
 	});

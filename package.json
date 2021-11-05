@@ -4,12 +4,10 @@
 	"description": "Implements an \"On Air\" light that indicates when a Zoom user is in a \"do not disturb\" status. Zoom invokes a webhook implemented on AWS using API Gateway and Lambda, which in turn invoke a Particle Photon Internet Button function.",
 	"scripts": {
 		"clean": "yarn clean:lambda; yarn clean:photon",
-		"clean:lambda": "rm -fr ts/lambda/dist",
+		"clean:lambdas": "rm -fr ts/lambdas/dist",
 		"clean:photon": "rm -f cpp/photon/photon_firmware_*.bin",
-		"build": "yarn build:lambda && yarn build:local",
-		"build:lambda": "yarn build:lambda:webpack",
-		"build:lambda:webpack": "(cd ts/lambda && webpack)",
-		"build:lambda:zip": "(cd ts/lambda/dist && zip --recurse-paths code.zip .)",
+		"build": "yarn build:lambdas && yarn build:local",
+		"build:lambdas": "(cd ts/lambdas && webpack)",
 		"build:local": "(cd ts/local && tsc --noEmit)",
 		"deploy": "(cd ts/cdk && yarn cdk deploy)",
 		"prebuild": "yarn clean",
@@ -36,6 +34,7 @@
 		"localtunnel": "^2.0.1",
 		"particle-api-js": "^9.1.0",
 		"serverless-http": "^2.7.0",
+		"uuid": "^8.3.2",
 		"yup": "^0.32.9"
 	},
 	"devDependencies": {
@@ -43,6 +42,7 @@
 		"@types/cors": "^2.8.12",
 		"@types/express": "^4.17.13",
 		"@types/localtunnel": "^2.0.1",
+		"@types/uuid": "^8.3.1",
 		"aws-sdk": "^2.987.0",
 		"ts-loader": "^9.2.6",
 		"ts-node": "^10.3.1",

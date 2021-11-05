@@ -2,9 +2,13 @@
 
 // @ts-ignore
 import Particle from 'particle-api-js';
-import { Color, OnAirLightState, Pattern } from '../lib/services/on-air-light/on-air-light-service';
-import { ParticleAuthenticatorService } from '../lib/services/on-air-light/particle-authenticator-service';
-import { ParticleOnAirLightService } from '../lib/services/on-air-light/particle-on-air-light-service';
+import {
+	Color,
+	OnAirLightState,
+	Pattern,
+} from '../lib/services/on-air-lights/on-air-light-service';
+import { ParticleAuthenticatorService } from '../lib/services/on-air-lights/particle-authenticator-service';
+import { ParticleOnAirLightService } from '../lib/services/on-air-lights/particle-on-air-light-service';
 import { EnvSecretsService } from '../lib/services/secrets/env-secrets-service';
 
 async function main(): Promise<void> {
