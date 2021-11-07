@@ -24,7 +24,7 @@ module.exports = {
 		],
 	},
 	output: {
-		// clean: true,
+		clean: true,
 		library: {
 			type: 'commonjs2',
 		},

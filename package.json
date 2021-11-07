@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"description": "Implements an \"On Air\" light that indicates when a Zoom user is in a \"do not disturb\" status. Zoom invokes a webhook implemented on AWS using API Gateway and Lambda, which in turn invoke a Particle Photon Internet Button function.",
 	"scripts": {
-		"clean": "yarn clean:lambda; yarn clean:photon",
+		"clean": "yarn clean:lambdas; yarn clean:photon",
 		"clean:lambdas": "rm -fr ts/lambdas/dist",
 		"clean:photon": "rm -f cpp/photon/photon_firmware_*.bin",
 		"build": "yarn build:lambdas && yarn build:local",
