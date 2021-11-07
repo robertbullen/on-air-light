@@ -12,14 +12,19 @@ export async function handler(
 	console.info(prefix, { event });
 
 	try {
-		let apiKeyHeaderName: string | undefined;
+		// Use `clientId` instead of AWS's default `X-Api-Key` because one client is hard-coded to
+		// the former. Search for its value in a case-insensitive manner because nonstandard
+		// headers have their case preserved by API Gateway.
+		const apiKeyHeaderNameActualCase = 'clientId';
+		const apiKeyHeaderNameLowerCase: string = apiKeyHeaderNameActualCase.toLowerCase();
 		let apiKeyHeaderValue: string | undefined;
-		if (event.headers) {
-			for (const headerName of ['x-api-key', 'clientid']) {
-				if (headerName in event.headers) {
-					apiKeyHeaderName = headerName;
-					apiKeyHeaderValue = event.headers[headerName];
-				}
+		for (const key in event.headers) {
+			if (
+				Object.prototype.hasOwnProperty.call(event.headers, key) &&
+				key.toLowerCase() === apiKeyHeaderNameLowerCase
+			) {
+				apiKeyHeaderValue = event.headers[key];
+				break;
 			}
 		}
 
@@ -34,7 +39,7 @@ export async function handler(
 				],
 				Version: '2012-10-17',
 			},
-			principalId: `${apiKeyHeaderName ?? 'unspecified'}-principal`,
+			principalId: `${apiKeyHeaderNameActualCase}-principal`,
 			usageIdentifierKey: apiKeyHeaderValue,
 		};
 

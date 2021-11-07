@@ -29,20 +29,24 @@ export class SsmSecretsService extends SecretsService<object, Dependencies> {
 		return this._secretsPromise;
 	}
 
-	private async getSecretsFromParameterStore(): Promise<Secrets> {
-		const prefix: string = this.methodName(this.getSecretsFromParameterStore);
-		console.info(prefix);
-
+	public static get ssmParameters(): Record<keyof Secrets, string> {
 		function generateParameterPath(suffix: string): string {
 			return path.posix.join(path.posix.sep, globalConfig.appName, suffix);
 		}
 
-		const ssmParameters: Record<keyof Secrets, string> = {
+		return {
 			particleDeviceId: generateParameterPath('PARTICLE_DEVICE_ID'),
 			particlePassword: generateParameterPath('PARTICLE_PASSWORD'),
 			particleUsername: generateParameterPath('PARTICLE_USERNAME'),
 			zoomClientId: generateParameterPath('ZOOM_CLIENT_ID'),
 		};
+	}
+
+	private async getSecretsFromParameterStore(): Promise<Secrets> {
+		const prefix: string = this.methodName(this.getSecretsFromParameterStore);
+		console.info(prefix);
+
+		const ssmParameters: Record<keyof Secrets, string> = SsmSecretsService.ssmParameters;
 		const ssmParameterNames: string[] = Object.values(ssmParameters);
 
 		const getParametersInput: SSM.GetParametersRequest = {

@@ -5,11 +5,13 @@ import * as iam from '@aws-cdk/aws-iam';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as route53 from '@aws-cdk/aws-route53';
 import * as route53Targets from '@aws-cdk/aws-route53-targets';
+import * as ssm from '@aws-cdk/aws-ssm';
 import * as cdk from '@aws-cdk/core';
 import { paramCase } from 'change-case';
 import { EnvironmentVariables } from '../../lambdas/handler/environment-variables';
 import { ItemKey } from '../../lib/dynamodb';
 import * as globalConfig from '../../lib/global-config';
+import { SsmSecretsService } from '../../lib/services/secrets/ssm-secrets-service';
 import { names } from './names';
 
 type DefaultFunctionProps = Pick<
@@ -97,7 +99,11 @@ export class OnAirLightStack extends cdk.Stack {
 				authorizer: new apigw.RequestAuthorizer(this, names.restApiRequestAuthorizer.id, {
 					authorizerName: names.restApiRequestAuthorizer.name,
 					handler: restApiAuthorizerFunction,
-					identitySources: [],
+
+					// Cache authorization results for the maximum allowed duration of 1-hour,
+					// keyed off of the `authorization` header.
+					identitySources: ['method.request.header.Authorization'],
+					resultsCacheTtl: cdk.Duration.hours(1),
 				}),
 			},
 			deployOptions: {
@@ -128,11 +134,20 @@ export class OnAirLightStack extends cdk.Stack {
 			},
 		});
 
-		const apiKey: apigw.IApiKey = restApi.addApiKey(names.restApiKey.id, {
-			apiKeyName: names.restApiKey.name,
+		const apiKeyIfttt: apigw.IApiKey = restApi.addApiKey(names.restApiKeyIfttt.id, {
+			apiKeyName: names.restApiKeyIfttt.name,
 		});
+		usagePlan.addApiKey(apiKeyIfttt);
 
-		usagePlan.addApiKey(apiKey);
+		const apiKeyZoomValue = ssm.StringParameter.valueForStringParameter(
+			this,
+			SsmSecretsService.ssmParameters.zoomClientId,
+		);
+		const apiKeyZoom: apigw.IApiKey = restApi.addApiKey(names.restApiKeyZoom.id, {
+			apiKeyName: names.restApiKeyZoom.name,
+			value: apiKeyZoomValue,
+		});
+		usagePlan.addApiKey(apiKeyZoom);
 
 		new route53.ARecord(this, names.restApiARecord.id, {
 			recordName: apiDomainName,
