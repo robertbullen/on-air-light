@@ -1,4 +1,5 @@
-import { Event, EventKey, EventsService } from './events-service';
+import { Event, EventKey } from './events';
+import { EventsService } from './events-service';
 
 type Config = object;
 type Dependencies = object;

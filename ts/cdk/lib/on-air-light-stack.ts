@@ -9,7 +9,7 @@ import * as ssm from '@aws-cdk/aws-ssm';
 import * as cdk from '@aws-cdk/core';
 import { paramCase } from 'change-case';
 import { EnvironmentVariables } from '../../lambdas/handler/environment-variables';
-import { ItemKey } from '../../lib/dynamodb';
+import { ItemKey, keyName } from '../../lib/dynamodb';
 import * as globalConfig from '../../lib/global-config';
 import { SsmSecretsService } from '../../lib/services/secrets/ssm-secrets-service';
 import { names } from './names';
@@ -207,10 +207,6 @@ export class OnAirLightStack extends cdk.Stack {
 	}
 
 	private createTable(): dynamodb.Table {
-		function keyName<T>(fieldName: keyof T): keyof T {
-			return fieldName;
-		}
-
 		return new dynamodb.Table(this, names.table.id, {
 			billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
 			partitionKey: {

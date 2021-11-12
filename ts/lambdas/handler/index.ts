@@ -16,6 +16,9 @@ import { DynamoDbEventsService } from '../../lib/services/events/dynamodb-events
 import { ParticleAuthenticatorService } from '../../lib/services/on-air-lights/particle-authenticator-service';
 import { ParticleOnAirLightService } from '../../lib/services/on-air-lights/particle-on-air-light-service';
 import { SsmSecretsService } from '../../lib/services/secrets/ssm-secrets-service';
+import { DynamoDbUserStatesService } from '../../lib/services/user-states/dynamodb-user-states-service';
+import { GoveeIftttOnOrOffEvent } from '../../lib/services/user-states/govee-ifttt';
+import { ZoomUserPresenceStatusUpdatedEvent } from '../../lib/services/user-states/zoom';
 import { env } from './environment-variables';
 
 const AWS = captureAWS(awsSdk);
@@ -28,12 +31,14 @@ async function createServerlessHandler(): Promise<serverless.Handler> {
 	console.info(prefix);
 
 	// Create services.
+	const tableName: string = env().TABLE_NAME;
+	const documentClient = new AWS.DynamoDB.DocumentClient();
 	const eventsService = new DynamoDbEventsService(
 		{
-			tableName: env().TABLE_NAME,
+			tableName,
 		},
 		{
-			documentClient: new AWS.DynamoDB.DocumentClient(),
+			documentClient,
 		},
 	);
 	const particle = new Particle();
@@ -54,13 +59,30 @@ async function createServerlessHandler(): Promise<serverless.Handler> {
 			secretsService,
 		},
 	);
+	const userStatesService = new DynamoDbUserStatesService(
+		{
+			tableName,
+		},
+		{
+			documentClient,
+		},
+	);
 
 	// Create the Express application.
 	const app: express.Application = await createApp({
 		eventsService,
-		healthCheckServices: [eventsService, particleAuthenticatorService, secretsService],
+		eventToUserStateConverters: [
+			GoveeIftttOnOrOffEvent.convertToUserState,
+			ZoomUserPresenceStatusUpdatedEvent.convertToUserState,
+		],
+		healthCheckServices: [
+			eventsService,
+			particleAuthenticatorService,
+			secretsService,
+			userStatesService,
+		],
 		onAirLightService,
-		secretsService,
+		userStatesService,
 	});
 
 	// Wrap the Express application with serverless-http.

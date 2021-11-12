@@ -79,3 +79,17 @@ export abstract class Service<
 		return methodName(this, method);
 	}
 }
+
+export type Config<TService> = TService extends Service<infer TConfig, object, object>
+	? TConfig
+	: never;
+export type Dependencies<TService> = TService extends Service<object, infer TDependencies, object>
+	? TDependencies
+	: never;
+export type HealthCheckData<TService> = TService extends Service<
+	object,
+	object,
+	infer THealthCheckData
+>
+	? THealthCheckData
+	: never;

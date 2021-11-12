@@ -1,4 +1,6 @@
+import { methodName } from '../../logging';
 import { Service } from '../service';
+import { UserActivity } from '../user-states/user-states';
 
 export const Color = {
 	black: 'black',
@@ -27,6 +29,46 @@ export interface OnAirLightState {
 	color: Color;
 	duration: number;
 	pattern: Pattern;
+}
+
+export abstract class OnAirLightState {
+	public static fromUserActivity(userActivity?: UserActivity): OnAirLightState {
+		const prefix: string = methodName(OnAirLightState, OnAirLightState.fromUserActivity);
+		console.info(prefix, { userActivity });
+
+		const state: OnAirLightState = {
+			color: Color.black,
+			duration: 2000,
+			pattern: Pattern.solid,
+		};
+		switch (userActivity) {
+			case UserActivity.idle:
+				state.color = Color.lime;
+				state.pattern = Pattern.solid;
+				break;
+
+			case UserActivity.busy:
+				state.color = Color.yellow;
+				state.pattern = Pattern.solid;
+				break;
+
+			case UserActivity.meeting:
+				state.color = Color.red;
+				state.pattern = Pattern.solid;
+				break;
+
+			case UserActivity.presenting:
+				state.color = Color.red;
+				state.pattern = Pattern.pulse;
+				break;
+
+			default:
+				break;
+		}
+
+		console.info(prefix, { result: state });
+		return state;
+	}
 }
 
 export abstract class OnAirLightService<

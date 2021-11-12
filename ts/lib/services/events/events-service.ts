@@ -1,29 +1,21 @@
 import { HealthCheckResult, Service } from '../service';
-
-export interface Event {
-	data: unknown;
-	eventId: string;
-	timestamp: string;
-}
-
-export type EventKey = string;
-
-export interface HealthCheckData {
-	event: Event;
-	eventKey: EventKey;
-}
+import { Event, EventAndKey, EventKey } from './events';
 
 export abstract class EventsService<
 	TConfig extends object = object,
 	TDependencies extends object = object,
-> extends Service<TConfig, TDependencies, HealthCheckData> {
-	public checkHealth(): Promise<HealthCheckResult<HealthCheckData>> {
+> extends Service<TConfig, TDependencies, EventAndKey> {
+	public static createHealthCheckEvent(): Event {
+		return {
+			data: {},
+			eventId: 'health-check',
+			timestamp: new Date(0).toISOString(),
+		};
+	}
+
+	public checkHealth(): Promise<HealthCheckResult<EventAndKey>> {
 		return this.doCheckHealth(async () => {
-			const event: Event = {
-				data: {},
-				eventId: 'health-check',
-				timestamp: new Date(0).toISOString(),
-			};
+			const event: Event = EventsService.createHealthCheckEvent();
 			const eventKey: EventKey = await this.createEvent(event);
 			return {
 				event,

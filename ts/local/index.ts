@@ -11,6 +11,9 @@ import { MockEventsService } from '../lib/services/events/mock-events-service';
 import { ParticleAuthenticatorService } from '../lib/services/on-air-lights/particle-authenticator-service';
 import { ParticleOnAirLightService } from '../lib/services/on-air-lights/particle-on-air-light-service';
 import { EnvSecretsService } from '../lib/services/secrets/env-secrets-service';
+import { GoveeIftttOnOrOffEvent } from '../lib/services/user-states/govee-ifttt';
+import { MockUserStatesService } from '../lib/services/user-states/mock-user-states-service';
+import { ZoomUserPresenceStatusUpdatedEvent } from '../lib/services/user-states/zoom';
 
 util.inspect.defaultOptions.depth = Infinity;
 
@@ -32,12 +35,22 @@ async function main(): Promise<void> {
 			secretsService,
 		},
 	);
+	const userStatesService = new MockUserStatesService();
 
 	const app: express.Application = await createApp({
 		eventsService,
-		healthCheckServices: [eventsService, particleAuthenticatorService, secretsService],
+		eventToUserStateConverters: [
+			GoveeIftttOnOrOffEvent.convertToUserState,
+			ZoomUserPresenceStatusUpdatedEvent.convertToUserState,
+		],
+		healthCheckServices: [
+			eventsService,
+			particleAuthenticatorService,
+			secretsService,
+			userStatesService,
+		],
 		onAirLightService,
-		secretsService,
+		userStatesService,
 	});
 
 	const server = app.listen(async () => {

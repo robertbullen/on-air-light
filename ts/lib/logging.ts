@@ -3,7 +3,9 @@ export function functionName(func: Function): string {
 }
 
 export function methodName(owner: object, method: Function): string {
-	return `${Object.getPrototypeOf(owner).constructor.name}.${functionName(method)}`;
+	const constructor: Function =
+		typeof owner === 'function' ? owner : Object.getPrototypeOf(owner).constructor;
+	return `${constructor.name}.${functionName(method)}`;
 }
 
 export function mask(value: string, minLength: number = 16): string {

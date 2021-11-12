@@ -13,8 +13,9 @@ export async function handler(
 
 	try {
 		// Use `clientId` instead of AWS's default `X-Api-Key` because one client is hard-coded to
-		// the former. Search for its value in a case-insensitive manner because nonstandard
-		// headers have their case preserved by API Gateway.
+		// the former. Also, search for its value in a case-insensitive manner because headers have
+		// their case preserved by API Gateway.
+		// <https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-known-issues.html>
 		const apiKeyHeaderNameActualCase = 'clientId';
 		const apiKeyHeaderNameLowerCase: string = apiKeyHeaderNameActualCase.toLowerCase();
 		let apiKeyHeaderValue: string | undefined;
