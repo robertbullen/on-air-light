@@ -1,6 +1,6 @@
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { generateKey, ItemKey, KeyLabel } from '../../dynamodb';
-import { Event, EventKey } from './events';
+import { Event } from './events';
 import { EventsService } from './events-service';
 
 interface Config {
@@ -11,12 +11,12 @@ interface Dependencies {
 	documentClient: DocumentClient;
 }
 
-export class DynamoDbEventsService extends EventsService<Config, Dependencies> {
+export class DynamoDbEventsService extends EventsService<ItemKey, Config, Dependencies> {
 	public constructor(config: Readonly<Config>, dependencies: Readonly<Dependencies>) {
 		super(config, dependencies);
 	}
 
-	public async createEvent(event: Event): Promise<EventKey> {
+	public async createEvent(event: Event): Promise<ItemKey> {
 		const prefix: string = this.methodName(this.createEvent);
 		console.info(prefix, { event });
 
@@ -26,17 +26,17 @@ export class DynamoDbEventsService extends EventsService<Config, Dependencies> {
 			TableName: this.config.tableName,
 		};
 		await this.dependencies.documentClient.put(putItemInput).promise();
-		const eventKey: EventKey = ItemKey.encode(eventItem);
+		const itemKey: ItemKey = ItemKey.from(eventItem);
 
-		console.info(prefix, { result: eventKey });
-		return eventKey;
+		console.info(prefix, { result: itemKey });
+		return itemKey;
 	}
 
-	public async readEvent(eventKey: EventKey): Promise<Event | undefined> {
+	public async readEvent(eventKey: ItemKey): Promise<Event | undefined> {
 		const prefix: string = this.methodName(this.readEvent);
 		console.info(prefix, { key: eventKey });
 
-		const itemKey: ItemKey = ItemKey.decode(eventKey);
+		const itemKey: ItemKey = ItemKey.from(eventKey);
 		const getItemInput: DocumentClient.GetItemInput = {
 			Key: itemKey,
 			TableName: this.config.tableName,
@@ -55,7 +55,7 @@ interface EventItem extends ItemKey {
 	event: Event;
 }
 
-abstract class EventItem {
+class EventItem implements ItemKey {
 	public static fromEvent(event: Event): EventItem {
 		return {
 			primaryKey: generateKey([KeyLabel.eventPartition, '0000']),

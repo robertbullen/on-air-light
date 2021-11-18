@@ -1,5 +1,5 @@
 import { Event } from '../events/events';
-import { UserState } from './user-states';
+import { UserState } from '../user-states/user-states';
 import { ZoomUserPresenceStatusUpdatedEvent } from './zoom';
 
 describe(ZoomUserPresenceStatusUpdatedEvent, () => {
@@ -32,6 +32,7 @@ describe(ZoomUserPresenceStatusUpdatedEvent, () => {
 Object {
   "activity": "busy",
   "eventKey": "b8046f7c-2129-42e2-a1e6-05245184f06c",
+  "locationId": "*",
   "source": Object {
     "deviceId": "Zoom",
     "serviceName": "Zoom",

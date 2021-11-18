@@ -1,6 +1,7 @@
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { generateKey, ItemKey, KeyLabel, keyName } from '../../dynamodb';
-import { UserState, UserStateKey } from './user-states';
+import { locationIdWildcard } from '../user-locations/user-locations';
+import { UserState } from './user-states';
 import { UserStatesService } from './user-states-service';
 
 interface Config {
@@ -11,12 +12,12 @@ interface Dependencies {
 	documentClient: DocumentClient;
 }
 
-export class DynamoDbUserStatesService extends UserStatesService<Config, Dependencies> {
+export class DynamoDbUserStatesService extends UserStatesService<ItemKey, Config, Dependencies> {
 	public constructor(config: Readonly<Config>, dependencies: Readonly<Dependencies>) {
 		super(config, dependencies);
 	}
 
-	public async createUserState(userState: UserState): Promise<UserStateKey> {
+	public override async createUserState(userState: UserState<ItemKey>): Promise<ItemKey> {
 		const prefix: string = this.methodName(this.createUserState);
 		console.info(prefix, { userState });
 
@@ -26,17 +27,17 @@ export class DynamoDbUserStatesService extends UserStatesService<Config, Depende
 			TableName: this.config.tableName,
 		};
 		await this.dependencies.documentClient.put(putItemInput).promise();
-		const userStateKey: UserStateKey = ItemKey.encode(userStateItem);
+		const itemKey: ItemKey = ItemKey.from(userStateItem);
 
-		console.info(prefix, { result: userStateKey });
-		return userStateKey;
+		console.info(prefix, { result: itemKey });
+		return itemKey;
 	}
 
-	public async readUserState(userStateKey: UserStateKey): Promise<UserState | undefined> {
+	public override async readUserState(userStateKey: ItemKey): Promise<UserState | undefined> {
 		const prefix: string = this.methodName(this.readUserState);
 		console.info(prefix, { userStateKey });
 
-		const itemKey: ItemKey = ItemKey.decode(userStateKey);
+		const itemKey: ItemKey = ItemKey.from(userStateKey);
 		const getItemInput: DocumentClient.GetItemInput = {
 			Key: itemKey,
 			TableName: this.config.tableName,
@@ -50,7 +51,10 @@ export class DynamoDbUserStatesService extends UserStatesService<Config, Depende
 		return userState;
 	}
 
-	public async readUserStates(userId: string): Promise<UserState[]> {
+	public override async readUserStates(
+		userId: string,
+		locationId?: string,
+	): Promise<UserState[]> {
 		const prefix: string = this.methodName(this.readUserStates);
 		console.info(prefix, { userId });
 
@@ -62,7 +66,7 @@ export class DynamoDbUserStatesService extends UserStatesService<Config, Depende
 			},
 			ExpressionAttributeValues: {
 				':primaryKey': generateKey([KeyLabel.userId, userId]),
-				':sortKeyHead': KeyLabel.sourceServiceName,
+				':sortKeyHead': KeyLabel.locationId,
 			},
 			KeyConditionExpression:
 				'#primaryKey = :primaryKey and begins_with(#sortKey, :sortKeyHead)',
@@ -71,9 +75,14 @@ export class DynamoDbUserStatesService extends UserStatesService<Config, Depende
 		const queryOutput: DocumentClient.QueryOutput = await this.dependencies.documentClient
 			.query(queryInput)
 			.promise();
-		const userStates: UserState[] = (
-			(queryOutput.Items as UserStateItem[] | undefined) ?? []
-		).map(UserStateItem.toUserState);
+		const userStates: UserState[] = ((queryOutput.Items as UserStateItem[] | undefined) ?? [])
+			.map(UserStateItem.toUserState)
+			.filter(
+				(userState: UserState): boolean =>
+					!locationId ||
+					userState.locationId === locationId ||
+					userState.locationId === locationIdWildcard,
+			);
 
 		console.info(prefix, { result: userStates });
 		return userStates;
@@ -89,6 +98,7 @@ abstract class UserStateItem {
 		return {
 			primaryKey: generateKey([KeyLabel.userId, userState.userId]),
 			sortKey: generateKey(
+				[KeyLabel.locationId, userState.locationId],
 				[KeyLabel.sourceServiceName, userState.source.serviceName],
 				[KeyLabel.sourceDeviceId, userState.source.deviceId],
 			),

@@ -1,7 +1,8 @@
 import { HealthCheckResult, Service } from '../service';
-import { UserState, UserStateAndKey, UserStateKey } from './user-states';
+import { UserState, UserStateAndKey } from './user-states';
 
 export abstract class UserStatesService<
+	TUserStateKey = unknown,
 	TConfig extends object = object,
 	TDependencies extends object = object,
 > extends Service<TConfig, TDependencies, UserStateAndKey> {
@@ -9,6 +10,7 @@ export abstract class UserStatesService<
 		return {
 			activity: 'absent',
 			eventKey: 'health-check',
+			locationId: 'health-check',
 			source: {
 				deviceId: 'health-check',
 				serviceName: 'health-check',
@@ -22,7 +24,7 @@ export abstract class UserStatesService<
 	public checkHealth(): Promise<HealthCheckResult<UserStateAndKey>> {
 		return this.doCheckHealth(async () => {
 			const userState: UserState = UserStatesService.createHealthCheckUserState();
-			const userStateKey: UserStateKey = await this.createUserState(userState);
+			const userStateKey: TUserStateKey = await this.createUserState(userState);
 
 			return {
 				userState,
@@ -31,7 +33,7 @@ export abstract class UserStatesService<
 		});
 	}
 
-	public abstract createUserState(userState: UserState): Promise<UserStateKey>;
-	public abstract readUserState(userStateKey: UserStateKey): Promise<UserState | undefined>;
-	public abstract readUserStates(userId: string): Promise<UserState[]>;
+	public abstract createUserState(userState: UserState): Promise<TUserStateKey>;
+	public abstract readUserState(userStateKey: TUserStateKey): Promise<UserState | undefined>;
+	public abstract readUserStates(userId: string, locationId?: string): Promise<UserState[]>;
 }

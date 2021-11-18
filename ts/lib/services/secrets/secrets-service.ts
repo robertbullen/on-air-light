@@ -1,7 +1,8 @@
 import { mask } from '../../logging';
-import { Service } from '../service';
+import { HealthCheckResult, Service } from '../service';
 
 export interface Secrets {
+	cryptoMasterKey: string;
 	particleDeviceId: string;
 	particlePassword: string;
 	particleUsername: string;
@@ -19,6 +20,10 @@ export abstract class SecretsService<
 			maskedSecrets[key] = mask(secrets[key]);
 		}
 		return maskedSecrets;
+	}
+
+	public checkHealth(): Promise<HealthCheckResult<Secrets>> {
+		return this.doCheckHealth(async () => SecretsService.maskSecrets(await this.getSecrets()));
 	}
 
 	public abstract getSecrets(): Promise<Secrets>;

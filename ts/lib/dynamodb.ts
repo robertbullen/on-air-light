@@ -1,6 +1,10 @@
+import { CryptoService } from './services/crypto/crypto-service';
+
 export const KeyLabel = {
-	eventId: 'EID',
-	eventPartition: 'EVT',
+	eventId: 'EVT',
+	eventPartition: 'EPT',
+	lightId: 'LIT',
+	locationId: 'LOC',
 	sourceServiceName: 'SVC',
 	sourceDeviceId: 'DVC',
 	timestamp: 'TST',
@@ -19,19 +23,27 @@ export interface ItemKey {
 }
 
 export abstract class ItemKey {
-	public static encode(itemKey: ItemKey): string {
-		const json: string = JSON.stringify({
+	/**
+	 * Creates a new object containing just the `primaryKey` and `sortKey` fields of the given
+	 * `itemKey`, which may have other fields on it as well.
+	 */
+	public static from(itemKey: ItemKey): ItemKey {
+		return {
 			primaryKey: itemKey.primaryKey,
 			sortKey: itemKey.sortKey,
-		});
-		// TODO: Encrypt
-		const value: string = Buffer.from(json).toString('base64');
+		};
+	}
+
+	public static async encode(cryptoService: CryptoService, itemKey: ItemKey): Promise<string> {
+		const json: string = JSON.stringify(ItemKey.from(itemKey));
+		const encryptedJson: Buffer = await cryptoService.encrypt(Buffer.from(json));
+		const value: string = encryptedJson.toString('base64');
 		return value;
 	}
 
-	public static decode(value: string): ItemKey {
-		// TODO: Decrypt
-		const json: string = Buffer.from(value, 'base64').toString('utf8');
+	public static async decode(cryptoService: CryptoService, value: string): Promise<ItemKey> {
+		const decryptedJson: Buffer = await cryptoService.decrypt(Buffer.from(value, 'base64'));
+		const json: string = decryptedJson.toString('utf8');
 		const itemKey = JSON.parse(json) as ItemKey;
 		return itemKey;
 	}

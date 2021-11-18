@@ -1,5 +1,3 @@
-import { Event, EventKey } from '../events/events';
-
 export const UserActivity = {
 	idle: 'idle',
 	busy: 'busy',
@@ -10,9 +8,10 @@ export const UserActivity = {
 
 export type UserActivity = typeof UserActivity[keyof typeof UserActivity];
 
-export interface UserState {
+export interface UserState<TEventKey = unknown> {
 	activity: UserActivity;
-	eventKey: EventKey;
+	eventKey: TEventKey;
+	locationId: string;
 	source: {
 		deviceId: string;
 		serviceName: string;
@@ -55,11 +54,7 @@ export abstract class UserState {
 	private static _activityLevels: Readonly<Record<UserActivity, number>> | undefined;
 }
 
-export type UserStateKey = string;
-
-export interface UserStateAndKey {
+export interface UserStateAndKey<TUserStateKey = unknown> {
 	userState: UserState;
-	userStateKey: UserStateKey;
+	userStateKey: TUserStateKey;
 }
-
-export type EventToUserStateConverter = (eventKey: EventKey, event: Event) => UserState | undefined;

@@ -13,7 +13,7 @@ export class SsmSecretsService extends SecretsService<object, Dependencies> {
 		super({}, dependencies);
 	}
 
-	public checkHealth(): Promise<HealthCheckResult<Secrets>> {
+	public override checkHealth(): Promise<HealthCheckResult<Secrets>> {
 		return this.doCheckHealth(async () =>
 			SecretsService.maskSecrets(await this.getSecretsFromParameterStore()),
 		);
@@ -35,6 +35,7 @@ export class SsmSecretsService extends SecretsService<object, Dependencies> {
 		}
 
 		return {
+			cryptoMasterKey: generateParameterPath('CRYPTO_MASTER_KEY'),
 			particleDeviceId: generateParameterPath('PARTICLE_DEVICE_ID'),
 			particlePassword: generateParameterPath('PARTICLE_PASSWORD'),
 			particleUsername: generateParameterPath('PARTICLE_USERNAME'),
@@ -74,6 +75,7 @@ export class SsmSecretsService extends SecretsService<object, Dependencies> {
 		}
 
 		const result: Secrets = {
+			cryptoMasterKey: findParameterValueOrThrow(ssmParameters.cryptoMasterKey),
 			particleDeviceId: findParameterValueOrThrow(ssmParameters.particleDeviceId),
 			particlePassword: findParameterValueOrThrow(ssmParameters.particlePassword),
 			particleUsername: findParameterValueOrThrow(ssmParameters.particleUsername),

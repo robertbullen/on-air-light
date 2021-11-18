@@ -11,14 +11,17 @@ import Particle from 'particle-api-js';
 import serverless from 'serverless-http';
 import * as util from 'util';
 import { createApp } from '../../lib/app';
+import { ItemKey } from '../../lib/dynamodb';
 import { functionName } from '../../lib/logging';
+import { CryptoService } from '../../lib/services/crypto/crypto-service';
+import { GenericEvent } from '../../lib/services/event-converters/generic';
+import { GoveeIftttOnOrOffEvent } from '../../lib/services/event-converters/govee-ifttt';
+import { ZoomUserPresenceStatusUpdatedEvent } from '../../lib/services/event-converters/zoom';
 import { DynamoDbEventsService } from '../../lib/services/events/dynamodb-events-service';
 import { ParticleAuthenticatorService } from '../../lib/services/on-air-lights/particle-authenticator-service';
 import { ParticleOnAirLightService } from '../../lib/services/on-air-lights/particle-on-air-light-service';
 import { SsmSecretsService } from '../../lib/services/secrets/ssm-secrets-service';
 import { DynamoDbUserStatesService } from '../../lib/services/user-states/dynamodb-user-states-service';
-import { GoveeIftttOnOrOffEvent } from '../../lib/services/user-states/govee-ifttt';
-import { ZoomUserPresenceStatusUpdatedEvent } from '../../lib/services/user-states/zoom';
 import { env } from './environment-variables';
 
 const AWS = captureAWS(awsSdk);
@@ -31,24 +34,36 @@ async function createServerlessHandler(): Promise<serverless.Handler> {
 	console.info(prefix);
 
 	// Create services.
-	const tableName: string = env().TABLE_NAME;
+	const secretsService = new SsmSecretsService({
+		ssm: new AWS.SSM(),
+	});
+
 	const documentClient = new AWS.DynamoDB.DocumentClient();
+
 	const eventsService = new DynamoDbEventsService(
 		{
-			tableName,
+			tableName: env().TABLE_NAME,
 		},
 		{
 			documentClient,
 		},
 	);
+
+	const cryptoService = new CryptoService({ secretsService });
+	function eventKeyToUrlPart(eventKey: ItemKey): Promise<string> {
+		return ItemKey.encode(cryptoService, eventKey);
+	}
+	function eventKeyFromUrlPart(text: string): Promise<ItemKey> {
+		return ItemKey.decode(cryptoService, text);
+	}
+
 	const particle = new Particle();
-	const secretsService = new SsmSecretsService({
-		ssm: new AWS.SSM(),
-	});
+
 	const particleAuthenticatorService = new ParticleAuthenticatorService({
 		particle,
 		secretsService,
 	});
+
 	const onAirLightService = new ParticleOnAirLightService(
 		{
 			deviceId: (await secretsService.getSecrets()).particleDeviceId,
@@ -59,9 +74,10 @@ async function createServerlessHandler(): Promise<serverless.Handler> {
 			secretsService,
 		},
 	);
+
 	const userStatesService = new DynamoDbUserStatesService(
 		{
-			tableName,
+			tableName: env().TABLE_NAME,
 		},
 		{
 			documentClient,
@@ -70,12 +86,16 @@ async function createServerlessHandler(): Promise<serverless.Handler> {
 
 	// Create the Express application.
 	const app: express.Application = await createApp({
+		eventKeyFromUrlPart,
+		eventKeyToUrlPart,
 		eventsService,
 		eventToUserStateConverters: [
 			GoveeIftttOnOrOffEvent.convertToUserState,
 			ZoomUserPresenceStatusUpdatedEvent.convertToUserState,
+			GenericEvent.convertToUserState,
 		],
 		healthCheckServices: [
+			cryptoService,
 			eventsService,
 			particleAuthenticatorService,
 			secretsService,

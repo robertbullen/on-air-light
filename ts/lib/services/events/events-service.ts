@@ -1,10 +1,11 @@
 import { HealthCheckResult, Service } from '../service';
-import { Event, EventAndKey, EventKey } from './events';
+import { Event, EventAndKey } from './events';
 
 export abstract class EventsService<
+	TEventKey,
 	TConfig extends object = object,
 	TDependencies extends object = object,
-> extends Service<TConfig, TDependencies, EventAndKey> {
+> extends Service<TConfig, TDependencies, EventAndKey<TEventKey>> {
 	public static createHealthCheckEvent(): Event {
 		return {
 			data: {},
@@ -13,10 +14,10 @@ export abstract class EventsService<
 		};
 	}
 
-	public checkHealth(): Promise<HealthCheckResult<EventAndKey>> {
+	public checkHealth(): Promise<HealthCheckResult<EventAndKey<TEventKey>>> {
 		return this.doCheckHealth(async () => {
 			const event: Event = EventsService.createHealthCheckEvent();
-			const eventKey: EventKey = await this.createEvent(event);
+			const eventKey: TEventKey = await this.createEvent(event);
 			return {
 				event,
 				eventKey,
@@ -24,7 +25,7 @@ export abstract class EventsService<
 		});
 	}
 
-	public abstract createEvent(event: Event): Promise<EventKey>;
+	public abstract createEvent(event: Event): Promise<TEventKey>;
 
-	public abstract readEvent(eventKey: EventKey): Promise<Event | undefined>;
+	public abstract readEvent(eventKey: TEventKey): Promise<Event | undefined>;
 }

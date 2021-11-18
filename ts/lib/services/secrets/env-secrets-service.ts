@@ -1,13 +1,8 @@
-import { HealthCheckResult } from '../service';
 import { Secrets, SecretsService } from './secrets-service';
 
 export class EnvSecretsService extends SecretsService<object, object> {
 	public constructor() {
 		super({}, {});
-	}
-
-	public checkHealth(): Promise<HealthCheckResult<Secrets>> {
-		return this.doCheckHealth(async () => SecretsService.maskSecrets(await this.getSecrets()));
 	}
 
 	public async getSecrets(): Promise<Secrets> {
@@ -23,6 +18,7 @@ export class EnvSecretsService extends SecretsService<object, object> {
 		}
 
 		const result: Secrets = {
+			cryptoMasterKey: getEnvVariableOrThrow('CRYPTO_MASTER_KEY'),
 			particleDeviceId: getEnvVariableOrThrow('PARTICLE_DEVICE_ID'),
 			particlePassword: getEnvVariableOrThrow('PARTICLE_PASSWORD'),
 			particleUsername: getEnvVariableOrThrow('PARTICLE_USERNAME'),

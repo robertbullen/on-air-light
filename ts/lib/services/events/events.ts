@@ -4,9 +4,7 @@ export interface Event {
 	timestamp: string;
 }
 
-export type EventKey = string;
-
-export interface EventAndKey {
+export interface EventAndKey<TEventKey = unknown> {
 	event: Event;
-	eventKey: EventKey;
+	eventKey: TEventKey;
 }

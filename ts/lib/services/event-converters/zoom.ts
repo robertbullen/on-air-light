@@ -1,6 +1,7 @@
 import * as yup from 'yup';
-import { Event, EventKey } from '../events/events';
-import { UserActivity, UserState } from './user-states';
+import { EventAndKey } from '../events/events';
+import { locationIdWildcard } from '../user-locations/user-locations';
+import { UserActivity, UserState } from '../user-states/user-states';
 
 /**
  * https://marketplace.zoom.us/docs/api-reference/webhook-reference/user-events/presence-status-updated
@@ -51,30 +52,7 @@ export interface ZoomUserPresenceStatusUpdatedEvent {
 }
 
 export abstract class ZoomUserPresenceStatusUpdatedEvent {
-	public static convertToUserState(eventKey: EventKey, event: Event): UserState | undefined {
-		let userState: UserState | undefined;
-
-		if (ZoomUserPresenceStatusUpdatedEvent.schema.isValidSync(event.data)) {
-			// TODO: Why is the yup schema incompatible without this cast?
-			const zoomEvent = event.data as ZoomUserPresenceStatusUpdatedEvent;
-
-			userState = {
-				activity: statusToUserActivity(zoomEvent.payload.object.presence_status),
-				eventKey,
-				source: {
-					deviceId: 'Zoom',
-					serviceName: 'Zoom',
-				},
-				timestamp: event.timestamp,
-				userId: 'Robert',
-				version: 1,
-			};
-		}
-
-		return userState;
-	}
-
-	private static get schema(): yup.SchemaOf<ZoomUserPresenceStatusUpdatedEvent> {
+	public static get schema(): yup.SchemaOf<ZoomUserPresenceStatusUpdatedEvent> {
 		return (ZoomUserPresenceStatusUpdatedEvent._schema ??= yup.object({
 			event: yup
 				.mixed<ZoomUserPresenceStatusUpdatedEvent['event']>()
@@ -95,6 +73,32 @@ export abstract class ZoomUserPresenceStatusUpdatedEvent {
 				})
 				.required(),
 		})).required();
+	}
+
+	public static convertToUserState<TEventKey = unknown>(
+		eventAndKey: EventAndKey<TEventKey>,
+	): UserState<TEventKey> | undefined {
+		let userState: UserState<TEventKey> | undefined;
+
+		if (ZoomUserPresenceStatusUpdatedEvent.schema.isValidSync(eventAndKey.event.data)) {
+			// TODO: Why is the yup schema incompatible without this cast?
+			const zoomEvent = eventAndKey.event.data as ZoomUserPresenceStatusUpdatedEvent;
+
+			userState = {
+				activity: statusToUserActivity(zoomEvent.payload.object.presence_status),
+				eventKey: eventAndKey.eventKey,
+				locationId: locationIdWildcard,
+				source: {
+					deviceId: 'Zoom',
+					serviceName: 'Zoom',
+				},
+				timestamp: eventAndKey.event.timestamp,
+				userId: 'Robert',
+				version: 1,
+			};
+		}
+
+		return userState;
 	}
 
 	private static _schema: yup.SchemaOf<ZoomUserPresenceStatusUpdatedEvent> | undefined;
