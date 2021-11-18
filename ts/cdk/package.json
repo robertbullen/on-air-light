@@ -12,7 +12,6 @@
 		"@aws-cdk/aws-route53-targets": "1.130.0",
 		"@aws-cdk/aws-ssm": "^1.130.0",
 		"@aws-cdk/core": "1.130.0",
-		"change-case": "^4.1.2",
 		"source-map-support": "^0.5.16"
 	},
 	"devDependencies": {

@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import asyncHandler from 'express-async-handler';
 import { validate } from 'express-yup';
+import isEmpty from 'lodash/isEmpty';
 import { v4 as uuid } from 'uuid';
 import * as yup from 'yup';
 import { Event, EventKey } from './services/events/events';
@@ -61,7 +62,15 @@ export async function createApp({
 
 	app.post(
 		'/events',
-		validate(yup.object({ body: yup.object().required() }).required()),
+		validate(
+			yup
+				.mixed()
+				.test(
+					'request',
+					'request must include a nonempty query or nonempty body',
+					(req: express.Request): boolean => !(isEmpty(req.body) && isEmpty(req.query)),
+				),
+		),
 		asyncHandler(async (req, res, _next) => {
 			// Save the event.
 			const event: Event = {

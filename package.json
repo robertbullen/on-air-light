@@ -27,11 +27,13 @@
 	"homepage": "https://github.com/robertbullen/on-air-light#readme",
 	"dependencies": {
 		"aws-xray-sdk-core": "^3.3.3",
+		"change-case": "^4.1.2",
 		"cors": "^2.8.5",
 		"express": "^4.17.1",
 		"express-async-handler": "^1.1.4",
 		"express-yup": "^1.0.0",
 		"localtunnel": "^2.0.1",
+		"lodash": "^4.17.21",
 		"particle-api-js": "^9.1.0",
 		"serverless-http": "^2.7.0",
 		"uuid": "^8.3.2",
