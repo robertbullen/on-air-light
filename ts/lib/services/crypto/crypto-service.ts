@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as crypto from 'crypto';
-import { SecretsService } from '../secrets/secrets-service';
+import { Secrets, SecretsService } from '../secrets/secrets-service';
 import { HealthCheckResult, Service } from '../service';
 
 interface Config {
@@ -8,7 +8,6 @@ interface Config {
 	authTagLength: number;
 	ivLength: number;
 	keyLength: number;
-	saltLength: number;
 }
 
 abstract class Config {
@@ -27,9 +26,6 @@ abstract class Config {
 
 			// The key size of 256 bits is taken from the algorithm's name.
 			keyLength: 32,
-
-			// Prevent rainbow table attacks.
-			saltLength: 16,
 		};
 	}
 }
@@ -46,15 +42,6 @@ interface HealthCheckData {
 export class CryptoService extends Service<Config, Dependencies, HealthCheckData> {
 	public constructor(dependencies: Readonly<Dependencies>) {
 		super(Config.default, dependencies);
-
-		this._keyPromise = (async (): Promise<Buffer> => {
-			const salt: Buffer = crypto.randomBytes(this.config.saltLength);
-			return crypto.scryptSync(
-				(await this.dependencies.secretsService.getSecrets()).cryptoMasterKey,
-				salt,
-				this.config.keyLength,
-			);
-		})();
 	}
 
 	public checkHealth(): Promise<HealthCheckResult<HealthCheckData>> {
@@ -75,7 +62,7 @@ export class CryptoService extends Service<Config, Dependencies, HealthCheckData
 		const iv: Buffer = crypto.randomBytes(this.config.ivLength);
 		const cipher: crypto.CipherGCM = crypto.createCipheriv(
 			this.config.algorithm,
-			await this._keyPromise,
+			await this.getKey(),
 			iv,
 			{ authTagLength: this.config.authTagLength },
 		);
@@ -94,7 +81,7 @@ export class CryptoService extends Service<Config, Dependencies, HealthCheckData
 		const authTag: Buffer = encapsulatedData.slice(-this.config.authTagLength);
 		const decipher: crypto.DecipherGCM = crypto.createDecipheriv(
 			this.config.algorithm,
-			await this._keyPromise,
+			await this.getKey(),
 			iv,
 			{ authTagLength: this.config.authTagLength },
 		);
@@ -103,5 +90,25 @@ export class CryptoService extends Service<Config, Dependencies, HealthCheckData
 		return data;
 	}
 
-	private readonly _keyPromise: Promise<Buffer>;
+	private async getKey(): Promise<Buffer> {
+		const secrets: Secrets = await this.dependencies.secretsService.getSecrets();
+		if (
+			secrets.cryptoMasterKey !== this._cachedCryptoMasterKey ||
+			secrets.cryptoSalt !== this._cachedCryptoSalt ||
+			!this._cachedKey
+		) {
+			this._cachedCryptoMasterKey = secrets.cryptoMasterKey;
+			this._cachedCryptoSalt = secrets.cryptoSalt;
+			this._cachedKey = crypto.scryptSync(
+				secrets.cryptoMasterKey,
+				secrets.cryptoSalt,
+				this.config.keyLength,
+			);
+		}
+		return this._cachedKey;
+	}
+
+	private _cachedCryptoMasterKey: string | undefined;
+	private _cachedCryptoSalt: string | undefined;
+	private _cachedKey: Buffer | undefined;
 }

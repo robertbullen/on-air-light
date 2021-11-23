@@ -34,15 +34,23 @@ export abstract class ItemKey {
 		};
 	}
 
-	public static async encode(cryptoService: CryptoService, itemKey: ItemKey): Promise<string> {
+	public static async encode(
+		itemKey: ItemKey,
+		cryptoService: CryptoService,
+		encoding: BufferEncoding,
+	): Promise<string> {
 		const json: string = JSON.stringify(ItemKey.from(itemKey));
 		const encryptedJson: Buffer = await cryptoService.encrypt(Buffer.from(json));
-		const value: string = encryptedJson.toString('base64');
+		const value: string = encryptedJson.toString(encoding);
 		return value;
 	}
 
-	public static async decode(cryptoService: CryptoService, value: string): Promise<ItemKey> {
-		const decryptedJson: Buffer = await cryptoService.decrypt(Buffer.from(value, 'base64'));
+	public static async decode(
+		value: string,
+		cryptoService: CryptoService,
+		encoding: BufferEncoding,
+	): Promise<ItemKey> {
+		const decryptedJson: Buffer = await cryptoService.decrypt(Buffer.from(value, encoding));
 		const json: string = decryptedJson.toString('utf8');
 		const itemKey = JSON.parse(json) as ItemKey;
 		return itemKey;

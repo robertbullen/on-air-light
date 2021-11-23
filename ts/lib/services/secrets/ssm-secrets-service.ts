@@ -36,6 +36,7 @@ export class SsmSecretsService extends SecretsService<object, Dependencies> {
 
 		return {
 			cryptoMasterKey: generateParameterPath('CRYPTO_MASTER_KEY'),
+			cryptoSalt: generateParameterPath('CRYPTO_SALT'),
 			particleDeviceId: generateParameterPath('PARTICLE_DEVICE_ID'),
 			particlePassword: generateParameterPath('PARTICLE_PASSWORD'),
 			particleUsername: generateParameterPath('PARTICLE_USERNAME'),
@@ -76,6 +77,7 @@ export class SsmSecretsService extends SecretsService<object, Dependencies> {
 
 		const result: Secrets = {
 			cryptoMasterKey: findParameterValueOrThrow(ssmParameters.cryptoMasterKey),
+			cryptoSalt: findParameterValueOrThrow(ssmParameters.cryptoSalt),
 			particleDeviceId: findParameterValueOrThrow(ssmParameters.particleDeviceId),
 			particlePassword: findParameterValueOrThrow(ssmParameters.particlePassword),
 			particleUsername: findParameterValueOrThrow(ssmParameters.particleUsername),

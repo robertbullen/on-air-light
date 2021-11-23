@@ -3,6 +3,7 @@ import { HealthCheckResult, Service } from '../service';
 
 export interface Secrets {
 	cryptoMasterKey: string;
+	cryptoSalt: string;
 	particleDeviceId: string;
 	particlePassword: string;
 	particleUsername: string;

@@ -51,10 +51,10 @@ async function createServerlessHandler(): Promise<serverless.Handler> {
 
 	const cryptoService = new CryptoService({ secretsService });
 	function eventKeyToUrlPart(eventKey: ItemKey): Promise<string> {
-		return ItemKey.encode(cryptoService, eventKey);
+		return ItemKey.encode(eventKey, cryptoService, 'base64url');
 	}
-	function eventKeyFromUrlPart(text: string): Promise<ItemKey> {
-		return ItemKey.decode(cryptoService, text);
+	function eventKeyFromUrlPart(urlPart: string): Promise<ItemKey> {
+		return ItemKey.decode(urlPart, cryptoService, 'base64url');
 	}
 
 	const particle = new Particle();

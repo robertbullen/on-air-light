@@ -19,6 +19,7 @@ export class EnvSecretsService extends SecretsService<object, object> {
 
 		const result: Secrets = {
 			cryptoMasterKey: getEnvVariableOrThrow('CRYPTO_MASTER_KEY'),
+			cryptoSalt: getEnvVariableOrThrow('CRYPTO_SALT'),
 			particleDeviceId: getEnvVariableOrThrow('PARTICLE_DEVICE_ID'),
 			particlePassword: getEnvVariableOrThrow('PARTICLE_PASSWORD'),
 			particleUsername: getEnvVariableOrThrow('PARTICLE_USERNAME'),
