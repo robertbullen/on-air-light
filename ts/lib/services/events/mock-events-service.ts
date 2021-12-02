@@ -24,5 +24,13 @@ export class MockEventsService extends EventsService<string, Config, Dependencie
 		return this.events.get(eventKey);
 	}
 
+	public eventKeyFromUrlPart(urlPart: string): string {
+		return decodeURIComponent(urlPart);
+	}
+
+	public eventKeyToUrlPart(eventKey: string): string {
+		return encodeURIComponent(eventKey);
+	}
+
 	private readonly events = new Map<string, Event>();
 }

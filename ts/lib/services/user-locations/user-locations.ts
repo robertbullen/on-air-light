@@ -1,1 +1,1 @@
-export const locationIdWildcard = '*';
+export const locationIdGlobal = '*';

@@ -1,4 +1,4 @@
-import { locationIdWildcard } from '../user-locations/user-locations';
+import { locationIdGlobal } from '../user-locations/user-locations';
 import { UserState } from './user-states';
 import { UserStatesService } from './user-states-service';
 
@@ -48,7 +48,7 @@ export class MockUserStatesService extends UserStatesService<string, Config, Dep
 				userState.userId === userId &&
 				(!locationId ||
 					userState.locationId === locationId ||
-					userState.locationId === locationIdWildcard),
+					userState.locationId === locationIdGlobal),
 		);
 
 		console.info(prefix, { result: userStates });

@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 import { EventAndKey } from '../events/events';
-import { locationIdWildcard } from '../user-locations/user-locations';
+import { locationIdGlobal } from '../user-locations/user-locations';
 import { UserActivity, UserState } from '../user-states/user-states';
 
 export interface GoveeIftttOnOrOffEvent {
@@ -35,7 +35,7 @@ export abstract class GoveeIftttOnOrOffEvent {
 				userState = {
 					activity: onOrOff === 'on' ? UserActivity.idle : UserActivity.absent,
 					eventKey: eventAndKey.eventKey,
-					locationId: locationIdWildcard,
+					locationId: locationIdGlobal,
 					source: {
 						deviceId: goveeIftttEvent.deviceName,
 						serviceName: 'Govee',

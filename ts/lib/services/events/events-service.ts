@@ -28,4 +28,7 @@ export abstract class EventsService<
 	public abstract createEvent(event: Event): Promise<TEventKey>;
 
 	public abstract readEvent(eventKey: TEventKey): Promise<Event | undefined>;
+
+	public abstract eventKeyFromUrlPart(urlPart: string): Promise<TEventKey> | TEventKey;
+	public abstract eventKeyToUrlPart(eventKey: TEventKey): Promise<string> | string;
 }

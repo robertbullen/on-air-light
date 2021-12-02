@@ -27,7 +27,7 @@ describe(ZoomUserPresenceStatusUpdatedEvent, () => {
 			};
 
 			const userState: UserState | undefined =
-				ZoomUserPresenceStatusUpdatedEvent.convertToUserState(eventKey, event);
+				ZoomUserPresenceStatusUpdatedEvent.convertToUserState({ event, eventKey });
 			expect(userState).toMatchInlineSnapshot(`
 Object {
   "activity": "busy",

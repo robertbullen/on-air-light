@@ -1,5 +1,3 @@
-import { CryptoService } from './services/crypto/crypto-service';
-
 export const KeyLabel = {
 	eventId: 'EVT',
 	eventPartition: 'EPT',
@@ -34,24 +32,16 @@ export abstract class ItemKey {
 		};
 	}
 
-	public static async encode(
-		itemKey: ItemKey,
-		cryptoService: CryptoService,
-		encoding: BufferEncoding,
-	): Promise<string> {
+	public static encode(itemKey: ItemKey, encoding: BufferEncoding = 'base64url'): string {
 		const json: string = JSON.stringify(ItemKey.from(itemKey));
-		const encryptedJson: Buffer = await cryptoService.encrypt(Buffer.from(json));
-		const value: string = encryptedJson.toString(encoding);
+		const jsonBuffer: Buffer = Buffer.from(json);
+		const value: string = jsonBuffer.toString(encoding);
 		return value;
 	}
 
-	public static async decode(
-		value: string,
-		cryptoService: CryptoService,
-		encoding: BufferEncoding,
-	): Promise<ItemKey> {
-		const decryptedJson: Buffer = await cryptoService.decrypt(Buffer.from(value, encoding));
-		const json: string = decryptedJson.toString('utf8');
+	public static decode(value: string, encoding: BufferEncoding = 'base64url'): ItemKey {
+		const jsonBuffer: Buffer = Buffer.from(value, encoding);
+		const json: string = jsonBuffer.toString('utf8');
 		const itemKey = JSON.parse(json) as ItemKey;
 		return itemKey;
 	}

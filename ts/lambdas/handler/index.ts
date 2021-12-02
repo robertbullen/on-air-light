@@ -11,9 +11,7 @@ import Particle from 'particle-api-js';
 import serverless from 'serverless-http';
 import * as util from 'util';
 import { createApp } from '../../lib/app';
-import { ItemKey } from '../../lib/dynamodb';
 import { functionName } from '../../lib/logging';
-import { CryptoService } from '../../lib/services/crypto/crypto-service';
 import { GenericEvent } from '../../lib/services/event-converters/generic';
 import { GoveeIftttOnOrOffEvent } from '../../lib/services/event-converters/govee-ifttt';
 import { ZoomUserPresenceStatusUpdatedEvent } from '../../lib/services/event-converters/zoom';
@@ -49,14 +47,6 @@ async function createServerlessHandler(): Promise<serverless.Handler> {
 		},
 	);
 
-	const cryptoService = new CryptoService({ secretsService });
-	function eventKeyToUrlPart(eventKey: ItemKey): Promise<string> {
-		return ItemKey.encode(eventKey, cryptoService, 'base64url');
-	}
-	function eventKeyFromUrlPart(urlPart: string): Promise<ItemKey> {
-		return ItemKey.decode(urlPart, cryptoService, 'base64url');
-	}
-
 	const particle = new Particle();
 
 	const particleAuthenticatorService = new ParticleAuthenticatorService({
@@ -86,8 +76,6 @@ async function createServerlessHandler(): Promise<serverless.Handler> {
 
 	// Create the Express application.
 	const app: express.Application = await createApp({
-		eventKeyFromUrlPart,
-		eventKeyToUrlPart,
 		eventsService,
 		eventToUserStateConverters: [
 			GoveeIftttOnOrOffEvent.convertToUserState,
@@ -95,7 +83,6 @@ async function createServerlessHandler(): Promise<serverless.Handler> {
 			GenericEvent.convertToUserState,
 		],
 		healthCheckServices: [
-			cryptoService,
 			eventsService,
 			particleAuthenticatorService,
 			secretsService,

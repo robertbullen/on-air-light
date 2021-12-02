@@ -14,16 +14,12 @@ import { UserActivity, UserState, UserStateAndKey } from './services/user-states
 import { UserStatesService } from './services/user-states/user-states-service';
 
 export async function createApp<TEventKey>({
-	eventKeyToUrlPart,
-	eventKeyFromUrlPart,
 	eventsService,
 	eventToUserStateConverters,
 	healthCheckServices,
 	onAirLightService,
 	userStatesService,
 }: {
-	eventKeyToUrlPart: (eventKey: TEventKey) => Promise<string>;
-	eventKeyFromUrlPart: (urlPart: string) => Promise<TEventKey>;
 	eventsService: EventsService<TEventKey>;
 	eventToUserStateConverters: readonly EventToUserStateConverter<TEventKey>[];
 	healthCheckServices: readonly Service[];
@@ -123,7 +119,7 @@ export async function createApp<TEventKey>({
 			}
 
 			res.status(userStateAndKey ? 201 : 202)
-				.location(`/events/${await eventKeyToUrlPart(eventKey)}`)
+				.location(`/events/${await eventsService.eventKeyToUrlPart(eventKey)}`)
 				.json(event);
 		}),
 	);
@@ -131,7 +127,9 @@ export async function createApp<TEventKey>({
 	app.get(
 		'/events/:eventKey',
 		asyncHandler(async (req, res, _next) => {
-			const eventKey: TEventKey = await eventKeyFromUrlPart(req.params.eventKey ?? '');
+			const eventKey: TEventKey = await eventsService.eventKeyFromUrlPart(
+				req.params.eventKey ?? '',
+			);
 			const event: Event | undefined = await eventsService.readEvent(eventKey);
 			res.status(event ? 200 : 404).json(event);
 		}),

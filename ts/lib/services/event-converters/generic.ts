@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 import { EventAndKey } from '../events/events';
-import { locationIdWildcard } from '../user-locations/user-locations';
+import { locationIdGlobal } from '../user-locations/user-locations';
 import { UserActivity, UserState } from '../user-states/user-states';
 
 export interface GenericEvent {
@@ -39,7 +39,7 @@ export abstract class GenericEvent {
 			userState = {
 				activity: genericEvent.activity,
 				eventKey: eventAndKey.eventKey,
-				locationId: genericEvent.locationId || locationIdWildcard,
+				locationId: genericEvent.locationId || locationIdGlobal,
 				source: genericEvent.source ?? {
 					deviceId: 'Generic',
 					serviceName: 'Generic',

@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 import { EventAndKey } from '../events/events';
-import { locationIdWildcard } from '../user-locations/user-locations';
+import { locationIdGlobal } from '../user-locations/user-locations';
 import { UserActivity, UserState } from '../user-states/user-states';
 
 /**
@@ -87,7 +87,7 @@ export abstract class ZoomUserPresenceStatusUpdatedEvent {
 			userState = {
 				activity: statusToUserActivity(zoomEvent.payload.object.presence_status),
 				eventKey: eventAndKey.eventKey,
-				locationId: locationIdWildcard,
+				locationId: locationIdGlobal,
 				source: {
 					deviceId: 'Zoom',
 					serviceName: 'Zoom',

@@ -49,6 +49,14 @@ export class DynamoDbEventsService extends EventsService<ItemKey, Config, Depend
 		console.info(prefix, { result: event });
 		return event;
 	}
+
+	public eventKeyFromUrlPart(urlPart: string): ItemKey {
+		return ItemKey.decode(urlPart);
+	}
+
+	public eventKeyToUrlPart(eventKey: ItemKey): string {
+		return ItemKey.encode(eventKey);
+	}
 }
 
 interface EventItem extends ItemKey {

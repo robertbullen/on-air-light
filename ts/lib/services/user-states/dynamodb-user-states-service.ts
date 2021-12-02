@@ -1,6 +1,6 @@
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { generateKey, ItemKey, KeyLabel, keyName } from '../../dynamodb';
-import { locationIdWildcard } from '../user-locations/user-locations';
+import { locationIdGlobal } from '../user-locations/user-locations';
 import { UserState } from './user-states';
 import { UserStatesService } from './user-states-service';
 
@@ -81,7 +81,7 @@ export class DynamoDbUserStatesService extends UserStatesService<ItemKey, Config
 				(userState: UserState): boolean =>
 					!locationId ||
 					userState.locationId === locationId ||
-					userState.locationId === locationIdWildcard,
+					userState.locationId === locationIdGlobal,
 			);
 
 		console.info(prefix, { result: userStates });
