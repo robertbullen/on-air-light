@@ -31,20 +31,22 @@ export abstract class GoveeIftttOnOrOffEvent {
 			const onOrOff: string | undefined = GoveeIftttOnOrOffEvent.messageRegex.exec(
 				goveeIftttEvent.message,
 			)?.groups?.onOrOff;
-			if (onOrOff) {
-				userState = {
-					activity: onOrOff === 'on' ? UserActivity.idle : UserActivity.absent,
-					eventKey: eventAndKey.eventKey,
-					locationId: locationIdGlobal,
-					source: {
-						deviceId: goveeIftttEvent.deviceName,
-						serviceName: 'Govee',
-					},
-					timestamp: eventAndKey.event.timestamp,
-					userId: goveeIftttEvent.userId,
-					version: 1,
-				};
+			if (!onOrOff) {
+				throw new TypeError();
 			}
+
+			userState = {
+				activities: onOrOff === 'on' ? [UserActivity.detected] : [],
+				eventKey: eventAndKey.eventKey,
+				locationId: locationIdGlobal,
+				source: {
+					deviceId: goveeIftttEvent.deviceName,
+					serviceName: 'Govee',
+				},
+				timestamp: eventAndKey.event.timestamp,
+				userId: goveeIftttEvent.userId,
+				version: 1,
+			};
 		}
 
 		return userState;

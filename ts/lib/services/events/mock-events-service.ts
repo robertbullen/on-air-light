@@ -24,11 +24,11 @@ export class MockEventsService extends EventsService<string, Config, Dependencie
 		return this.events.get(eventKey);
 	}
 
-	public eventKeyFromUrlPart(urlPart: string): string {
+	public async eventKeyFromUrlPart(urlPart: string): Promise<string> {
 		return decodeURIComponent(urlPart);
 	}
 
-	public eventKeyToUrlPart(eventKey: string): string {
+	public async eventKeyToUrlPart(eventKey: string): Promise<string> {
 		return encodeURIComponent(eventKey);
 	}
 

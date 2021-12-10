@@ -50,11 +50,11 @@ export class DynamoDbEventsService extends EventsService<ItemKey, Config, Depend
 		return event;
 	}
 
-	public eventKeyFromUrlPart(urlPart: string): ItemKey {
+	public async eventKeyFromUrlPart(urlPart: string): Promise<ItemKey> {
 		return ItemKey.decode(urlPart);
 	}
 
-	public eventKeyToUrlPart(eventKey: ItemKey): string {
+	public async eventKeyToUrlPart(eventKey: ItemKey): Promise<string> {
 		return ItemKey.encode(eventKey);
 	}
 }

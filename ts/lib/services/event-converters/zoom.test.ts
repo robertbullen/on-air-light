@@ -30,7 +30,9 @@ describe(ZoomUserPresenceStatusUpdatedEvent, () => {
 				ZoomUserPresenceStatusUpdatedEvent.convertToUserState({ event, eventKey });
 			expect(userState).toMatchInlineSnapshot(`
 Object {
-  "activity": "busy",
+  "activities": Array [
+    "busy",
+  ],
   "eventKey": "b8046f7c-2129-42e2-a1e6-05245184f06c",
   "locationId": "*",
   "source": Object {

@@ -8,6 +8,7 @@ import { EventToUserStateConverter } from '../services/event-converters/event-co
 import { Event, EventAndKey } from '../services/events/events';
 import { EventsService } from '../services/events/events-service';
 import { OnAirLightService, OnAirLightState } from '../services/on-air-lights/on-air-light-service';
+import { locationIdGlobal } from '../services/user-locations/user-locations';
 import { UserActivity, UserState, UserStateAndKey } from '../services/user-states/user-states';
 import { UserStatesService } from '../services/user-states/user-states-service';
 
@@ -75,12 +76,15 @@ export function createEventsRouter<TEventKey>({
 					userStateAndKey.userState.userId,
 					userStateAndKey.userState.locationId,
 				);
-				const sortedUserStates: UserState[] =
-					UserState.sortByActivityAndTimestamp(userStates);
-				const activity: UserActivity | undefined = sortedUserStates[0]?.activity;
+				const locations: Map<
+					string,
+					Set<UserActivity>
+				> = UserState.aggregateActivitiesByLocation(userStates);
 
 				// Update the on-air light accordingly.
-				const onAirLightState: OnAirLightState = OnAirLightState.fromUserActivity(activity);
+				const onAirLightState: OnAirLightState = OnAirLightState.fromUserActivities(
+					locations.get(locationIdGlobal) ?? new Set<UserActivity>(),
+				);
 				await onAirLightService.setState(onAirLightState);
 			}
 

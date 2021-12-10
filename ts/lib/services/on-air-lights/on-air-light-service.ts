@@ -32,38 +32,29 @@ export interface OnAirLightState {
 }
 
 export abstract class OnAirLightState {
-	public static fromUserActivity(userActivity?: UserActivity): OnAirLightState {
-		const prefix: string = methodName(OnAirLightState, OnAirLightState.fromUserActivity);
-		console.info(prefix, { userActivity });
+	public static fromUserActivities(activities: Set<UserActivity>): OnAirLightState {
+		const prefix: string = methodName(OnAirLightState, OnAirLightState.fromUserActivities);
+		console.info(prefix, { activities });
 
 		const state: OnAirLightState = {
 			color: Color.black,
 			duration: 2000,
 			pattern: Pattern.solid,
 		};
-		switch (userActivity) {
-			case UserActivity.idle:
-				state.color = Color.lime;
-				state.pattern = Pattern.solid;
-				break;
-
-			case UserActivity.busy:
-				state.color = Color.yellow;
-				state.pattern = Pattern.solid;
-				break;
-
-			case UserActivity.meeting:
-				state.color = Color.red;
-				state.pattern = Pattern.solid;
-				break;
-
-			case UserActivity.presenting:
+		if (activities.has(UserActivity.detected)) {
+			if (activities.has(UserActivity.presenting)) {
 				state.color = Color.red;
 				state.pattern = Pattern.pulse;
-				break;
-
-			default:
-				break;
+			} else if (activities.has(UserActivity.meeting)) {
+				state.color = Color.red;
+				state.pattern = Pattern.solid;
+			} else if (activities.has(UserActivity.busy)) {
+				state.color = Color.yellow;
+				state.pattern = Pattern.solid;
+			} else {
+				state.color = Color.lime;
+				state.pattern = Pattern.solid;
+			}
 		}
 
 		console.info(prefix, { result: state });

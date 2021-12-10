@@ -23,13 +23,6 @@ util.inspect.defaultOptions.depth = Infinity;
 async function main(): Promise<void> {
 	const eventsService = new MockEventsService();
 
-	async function eventKeyToUrlPart(eventKey: string): Promise<string> {
-		return eventKey;
-	}
-	async function eventKeyFromUrlPart(urlPart: string): Promise<string> {
-		return urlPart;
-	}
-
 	const particle = new Particle();
 
 	const secretsService = new EnvSecretsService();
@@ -53,8 +46,6 @@ async function main(): Promise<void> {
 	const userStatesService = new MockUserStatesService();
 
 	const app: express.Application = await createApp({
-		eventKeyFromUrlPart,
-		eventKeyToUrlPart,
 		eventsService,
 		eventToUserStateConverters: [
 			GoveeIftttOnOrOffEvent.convertToUserState,

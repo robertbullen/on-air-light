@@ -8,7 +8,7 @@ export abstract class UserStatesService<
 > extends Service<TConfig, TDependencies, UserStateAndKey> {
 	public static createHealthCheckUserState(): UserState {
 		return {
-			activity: 'absent',
+			activities: [],
 			eventKey: 'health-check',
 			locationId: 'health-check',
 			source: {

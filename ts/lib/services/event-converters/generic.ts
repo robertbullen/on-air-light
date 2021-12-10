@@ -4,7 +4,7 @@ import { locationIdGlobal } from '../user-locations/user-locations';
 import { UserActivity, UserState } from '../user-states/user-states';
 
 export interface GenericEvent {
-	activity: UserActivity;
+	activities: UserActivity[];
 	locationId?: string;
 	source?: {
 		deviceId: string;
@@ -15,18 +15,23 @@ export interface GenericEvent {
 
 export abstract class GenericEvent {
 	public static get schema(): yup.SchemaOf<GenericEvent> {
-		return (GenericEvent._schema ??= yup.object({
-			activity: yup.mixed<UserActivity>().oneOf(Object.values(UserActivity)).required(),
-			locationId: yup.string().optional(),
-			source: yup
-				.object({
-					deviceId: yup.string().required(),
-					serviceName: yup.string().required(),
-				})
-				.default(undefined)
-				.optional(),
-			userId: yup.string().required(),
-		})).required();
+		return (GenericEvent._schema ??= yup
+			.object({
+				activities: yup
+					.array(yup.mixed<UserActivity>().oneOf(Object.values(UserActivity)).required())
+					.required(),
+				locationId: yup.string().optional(),
+				source: yup
+					.object({
+						deviceId: yup.string().required(),
+						serviceName: yup.string().required(),
+					})
+					.default(undefined)
+					.optional(),
+				userId: yup.string().required(),
+			})
+			// TODO: This cast is a workaround for issue [#1367](https://github.com/jquense/yup/issues/1389).
+			.required() as yup.SchemaOf<GenericEvent>);
 	}
 
 	public static convertToUserState<TEventKey = unknown>(
@@ -35,9 +40,10 @@ export abstract class GenericEvent {
 		let userState: UserState<TEventKey> | undefined;
 
 		if (GenericEvent.schema.isValidSync(eventAndKey.event.data)) {
-			const genericEvent: GenericEvent = eventAndKey.event.data;
+			// TODO: This cast is a workaround for issue [#1367](https://github.com/jquense/yup/issues/1389).
+			const genericEvent = eventAndKey.event.data as GenericEvent;
 			userState = {
-				activity: genericEvent.activity,
+				activities: genericEvent.activities,
 				eventKey: eventAndKey.eventKey,
 				locationId: genericEvent.locationId || locationIdGlobal,
 				source: genericEvent.source ?? {

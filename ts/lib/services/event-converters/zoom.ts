@@ -18,22 +18,22 @@ export const ZoomUserPresenceStatus = {
 
 type ZoomUserPresenceStatus = typeof ZoomUserPresenceStatus[keyof typeof ZoomUserPresenceStatus];
 
-function statusToUserActivity(status: ZoomUserPresenceStatus): UserActivity {
+function statusToUserActivities(status: ZoomUserPresenceStatus): UserActivity[] {
 	switch (status) {
 		case ZoomUserPresenceStatus.available:
 		case ZoomUserPresenceStatus.away:
-			return UserActivity.idle;
+			return [UserActivity.detected];
 
 		case ZoomUserPresenceStatus.doNotDisturb:
 		case ZoomUserPresenceStatus.inCalendarEvent:
-			return UserActivity.busy;
+			return [UserActivity.busy];
 
 		case ZoomUserPresenceStatus.inMeeting:
 		case ZoomUserPresenceStatus.onPhoneCall:
-			return UserActivity.meeting;
+			return [UserActivity.meeting];
 
 		case ZoomUserPresenceStatus.presenting:
-			return UserActivity.presenting;
+			return [UserActivity.presenting];
 	}
 }
 
@@ -85,7 +85,7 @@ export abstract class ZoomUserPresenceStatusUpdatedEvent {
 			const zoomEvent = eventAndKey.event.data as ZoomUserPresenceStatusUpdatedEvent;
 
 			userState = {
-				activity: statusToUserActivity(zoomEvent.payload.object.presence_status),
+				activities: statusToUserActivities(zoomEvent.payload.object.presence_status),
 				eventKey: eventAndKey.eventKey,
 				locationId: locationIdGlobal,
 				source: {
