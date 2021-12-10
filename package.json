@@ -37,7 +37,7 @@
 		"particle-api-js": "^9.1.0",
 		"serverless-http": "^2.7.0",
 		"uuid": "^8.3.2",
-		"yup": "^0.32.9"
+		"yup": "^0.32.11"
 	},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.83",
