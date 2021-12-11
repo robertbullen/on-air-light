@@ -4,13 +4,14 @@ import { UserStatesService } from './user-states-service';
 
 type Config = object;
 type Dependencies = object;
+type UserStateKey = string;
 
-export class MockUserStatesService extends UserStatesService<string, Config, Dependencies> {
+export class MockUserStatesService extends UserStatesService<UserStateKey, Config, Dependencies> {
 	public constructor() {
 		super({}, {});
 	}
 
-	public override async createUserState(userState: UserState): Promise<string> {
+	public override async createUserState(userState: UserState): Promise<UserStateKey> {
 		const prefix: string = this.methodName(this.createUserState);
 		console.info(prefix, { userState });
 
@@ -26,7 +27,9 @@ export class MockUserStatesService extends UserStatesService<string, Config, Dep
 		return userStateKey;
 	}
 
-	public override async readUserState(userStateKey: string): Promise<UserState | undefined> {
+	public override async readUserState(
+		userStateKey: UserStateKey,
+	): Promise<UserState | undefined> {
 		const prefix: string = this.methodName(this.readUserState);
 		console.info(prefix, { userStateKey });
 

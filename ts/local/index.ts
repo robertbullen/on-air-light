@@ -2,26 +2,32 @@
 
 import { paramCase } from 'change-case';
 import * as express from 'express';
+import * as http from 'http';
 import localtunnel from 'localtunnel';
 import { AddressInfo } from 'net';
 // @ts-ignore
 import Particle from 'particle-api-js';
+import * as path from 'path';
 import * as util from 'util';
 import { createApp } from '../lib/app';
 import * as globalConfig from '../lib/global-config';
 import { GenericEvent } from '../lib/services/event-converters/generic';
 import { GoveeIftttOnOrOffEvent } from '../lib/services/event-converters/govee-ifttt';
 import { ZoomUserPresenceStatusUpdatedEvent } from '../lib/services/event-converters/zoom';
-import { MockEventsService } from '../lib/services/events/mock-events-service';
+import { FsEventsService } from '../lib/services/events/fs-events-service';
 import { ParticleAuthenticatorService } from '../lib/services/on-air-lights/particle-authenticator-service';
 import { ParticleOnAirLightService } from '../lib/services/on-air-lights/particle-on-air-light-service';
 import { EnvSecretsService } from '../lib/services/secrets/env-secrets-service';
-import { MockUserStatesService } from '../lib/services/user-states/mock-user-states-service';
+import { FsUserStatesService } from '../lib/services/user-states/fs-user-states-service';
 
 util.inspect.defaultOptions.depth = Infinity;
 
 async function main(): Promise<void> {
-	const eventsService = new MockEventsService();
+	const baseDirPath: string = path.join(__dirname, 'data');
+
+	const eventsService = new FsEventsService({
+		baseDirPath,
+	});
 
 	const particle = new Particle();
 
@@ -43,7 +49,9 @@ async function main(): Promise<void> {
 		},
 	);
 
-	const userStatesService = new MockUserStatesService();
+	const userStatesService = new FsUserStatesService({
+		baseDirPath,
+	});
 
 	const app: express.Application = await createApp({
 		eventsService,
@@ -62,7 +70,7 @@ async function main(): Promise<void> {
 		userStatesService,
 	});
 
-	const server = app.listen(async () => {
+	const server: http.Server = app.listen(process.env.PORT, async () => {
 		const address = server.address() as AddressInfo;
 		console.info({ address });
 

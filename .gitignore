@@ -3,5 +3,6 @@
 /ts/cdk/.cdk.staging
 /ts/cdk/cdk.out
 /ts/lambdas/dist/
+/ts/local/data/
 node_modules/
 yarn-error.log

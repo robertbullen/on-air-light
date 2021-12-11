@@ -17,7 +17,7 @@ export class DynamoDbUserStatesService extends UserStatesService<ItemKey, Config
 		super(config, dependencies);
 	}
 
-	public override async createUserState(userState: UserState<ItemKey>): Promise<ItemKey> {
+	public override async createUserState(userState: UserState): Promise<ItemKey> {
 		const prefix: string = this.methodName(this.createUserState);
 		console.info(prefix, { userState });
 
